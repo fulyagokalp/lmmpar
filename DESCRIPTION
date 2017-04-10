@@ -1,0 +1,22 @@
+Package: lmmpar
+Title: Parallel Linear Mixed Model
+Version: 0.1.0
+Authors@R: c(
+    person("Fulya", "Gokalp Yavuz", email = "fulyagokalp@gmail.com", role = c("aut", "cre")),
+    person("Barret", "Schloerke", role = "aut"),
+    person("advisor", role = "ths")
+  )
+Description: More about what it does (maybe more than one line). More things.
+Encoding: UTF-8
+License: MIT + file LICENSE
+LazyData: TRUE
+Depends: R (>= 3.2.2)
+Imports: MASS,
+    mnormt,
+    lme4,
+    nlme,
+    mvtnorm,
+    plyr,
+    doParallel
+Suggests: testthat
+RoxygenNote: 6.0.1
