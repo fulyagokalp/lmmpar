@@ -1,4 +1,6 @@
 
+# devtools::install_github("fulyagokalp/lmmpar")
+
 # library(MASS)
 # library(mnormt)
 # library(lme4)
