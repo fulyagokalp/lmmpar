@@ -2,11 +2,10 @@
 % Please edit documentation in R/lmm.R
 \name{lmm.ep.em}
 \alias{lmm.ep.em}
-\title{Title
-(blank)
-description}
+\title{Title}
 \usage{
-lmm.ep.em(y, X, Z, beta, R, D, cores = 3)
+lmm.ep.em(y, X, Z, beta, R, D, sigma, cores = 3, nu = 3, nrm = 100,
+  maxiter = 500, first_parallel = FALSE, second_parallel = FALSE)
 }
 \arguments{
 \item{y}{desc1}
@@ -24,7 +23,5 @@ lmm.ep.em(y, X, Z, beta, R, D, cores = 3)
 \item{cores}{desc4}
 }
 \description{
-Title
-(blank)
 description
 }
