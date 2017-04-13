@@ -11,10 +11,11 @@
 # library(plyr)
 # # install.packages("doParallel")
 # library(doParallel)
+# library(psych)
 
 
 #' Title
-#' (blank)
+#'
 #' description
 #' @param y desc1
 #' @param X desc1
@@ -30,129 +31,115 @@
 # ' @example
 # ' #example code here
 # ' lmm.ep.em()
-lmm.ep.em <- function(y, X, Z, beta,R,D, cores = 3){
+
+#Reference paper: Schafer, J.L.S., 1998, some improved procedures for linear mixed models
+#Ui, Wi and beta is calculated in parallel form. Then,sigma and D are calculated with final beta
+lmm.ep.em <- function(y, X, Z, beta, R, D, sigma, cores = 3, nu=3, nrm=100, maxiter=500, first_parallel=FALSE, second_parallel=FALSE){
+  #first_parallel <- TRUE
 
   doParallel::registerDoParallel(cores)
 
   a <- 0
-  aa <- 1
-  nrm=100
-  maxiter <- 500
-
   p = nrow(beta)
   n = ncol(y)
   m = nrow(y)
   N <- n*m
+  q = dim(D)[1]
 
-
-  V <- Z%*%D%*%t(Z)+R
   Dinv <- ginv(D)
   Rinv <- ginv(R)
-  Vinv <- ginv(V)
-
-
 
   update.beta.first <- array(0,c(p,p,n))
   update.beta.second <- array(0,c(p,1,n))
-  update.R <- array(0,c(m,m,n))
-  update.D <- array(0,c(p,p,n))
-  ETauSquare <- matrix(0,c(n,1))
-  ETauSquareMinus <- matrix(0,c(n,1))
-  update.lnL1 <- matrix(0,c(n,1))
-  update.lnL2 <- matrix(0,c(n,1))
-
-
+  update.U <- array(0, c(q, q, n))
+  update.W <- array(0, c(m, m, n))
+  update.sigma <- matrix(0, n, 1)
+  update.D <- array(0,c(q,q,n))
 
 
   repeat {
-    if (a>maxiter||nrm<0.005) {break}   #nrm<0.0005 idi degistirdim
+    if (a>maxiter||nrm<0.0005) {break}
 
-    #Parallel olmasa, asagidaki kod ith_ans = lapply(1:n, function(i) {} ) olarak yaziliyor.
+    #It is the parallel version of ith_ans = lapply(1:n, function(i) {} )
     ith_ans = plyr::llply(1:n, function(i) {
       #E Step
 
-      Temp1 <- ginv(Dinv+t(Z)%*%Rinv%*%Z)
+      U.i <- ginv(Dinv+(t(Z[,,i])%*%Rinv%*%Z[,,i]))
+      W.i <- Rinv-(Rinv%*%Z[,,i]%*%U.i%*%t(Z[,,i])%*%Rinv)
 
-      u.i <- Temp1%*%t(Z)%*%Rinv%*%(y[,i]-X%*%beta)
-
-      Temp2 <- t(u.i)%*%Dinv%*%u.i
-
-      ETauSquare.i <- 1
-      ETauSquareMinus.i <- 1
-
-      Omega <- as.numeric(ETauSquare.i)*Temp1
-
-      #CM Step 1 Fix Ri=RiHat
       #Update beta
 
-      update.beta.first.i <- as.numeric(ETauSquareMinus.i)*(t(X)%*%Rinv%*%X)
-      update.beta.second.i <- as.numeric(ETauSquareMinus.i)*(t(X)%*%Rinv%*%(y[,i]-Z%*%u.i))
-
-      #CM Step 2 Fix beta=betaHat
-
-      update.R.i <- as.numeric(ETauSquareMinus.i)*((y[,i]-Z%*%u.i)%*%t(y[,i]-Z%*%u.i)+Z%*%Omega%*%t(Z)+X%*%beta%*%t(beta)%*%t(X)-(X%*%beta%*%t(y[,i]-Z%*%u.i)))
-
-      #CM Step 3
-
-      update.D.i <- Temp1+as.numeric(ETauSquareMinus.i)*(u.i%*%t(u.i))
-      update.lnL1.i <- (t(y[,i]-X%*%beta-Z%*%u.i)*as.numeric(ETauSquareMinus.i))%*%(Rinv%*%(y[,i]-X%*%beta-Z%*%u.i))
-      update.lnL2.i <- as.numeric(ETauSquareMinus.i)*Temp2
+      update.beta.first.i <- t(X[,,i])%*%W.i%*%X[,,i]
+      update.beta.second.i <- t(X[,,i])%*%W.i%*%y[,i]
 
       return(list(
+        uU  = U.i,
+        uW  = W.i,
         ub1 = update.beta.first.i,
-        ub2 = update.beta.second.i,
-        uR  = update.R.i,
-        uD  = update.D.i,
-        uL1 = update.lnL1.i,
-        uL2 = update.lnL1.i
+        ub2 = update.beta.second.i
       ))
-    }, .parallel = FALSE)
+    }, .parallel = first_parallel)
 
     for(i in 1:n) {
       ith_ans_i = ith_ans[[i]]
       update.beta.first[,,i] = ith_ans_i$ub1
       update.beta.second[,,i] = ith_ans_i$ub2
-      update.R[,,i] = ith_ans_i$uR
-      update.D[,,i] = ith_ans_i$uD
-      update.lnL1[i,] = ith_ans_i$uL1
-      update.lnL2[i,] = ith_ans_i$uL2
+      update.U[,,i] = ith_ans_i$uU
+      update.W[,,i] = ith_ans_i$uW
+    }
+    final.beta <- ginv(apply(update.beta.first, c(1,2), sum))%*%apply(update.beta.second, c(1,2), sum)
+    #CM Step 2 Fix beta=betaHat
+    #Update sigma
+    ith_ans2 = plyr::llply(1:n, function(i){
+      update.sigma.i <- t(y[,i]-X[,,i]%*%final.beta)%*%update.W[,,i]%*%(y[,i]-X[,,i]%*%final.beta)
+
+      #Update u (random effect)
+      u.i <- update.U[,,i]%*%t(Z[,,i])%*%Rinv%*%(y[,i]-X[,,i]%*%final.beta)
+      #CM Step 3
+      #Update D
+
+      update.D.i <- (1/sigma)*(u.i%*%t(u.i)+update.U[,,i])
+      #browser()
+      return(list(
+        usigma  = update.sigma.i,
+        uD  = update.D.i
+
+      ))
+    }, .parallel = second_parallel)
+
+
+    for(i in 1:n) {
+      ith_ans_i2 = ith_ans2[[i]]
+      update.sigma[i] = ith_ans_i2$usigma
+      update.D[,,i] = ith_ans_i2$uD
+
     }
 
     #browser()
 
     #Final calculations
-    final.beta <- ginv(apply(update.beta.first, c(1,2), sum))%*%apply(update.beta.second, c(1,2), sum)
-    final.R <- (1/N)*(apply(update.R, c(1,2), sum))
-    final.D <- (1/n)*(apply(update.D, c(1,2), sum))
-    #final.sigma <- (1/n)*sum(sigma)
 
+    final.D <- (1/n)*(apply(update.D, c(1,2), sum))
+    final.sigma <- (1/N)*sum(update.sigma)
+    ratio <- final.sigma/sigma
     nrm <- norm(final.beta-beta)
-    beta=final.beta
-    if (median(svd(final.R)$d)<10) R=final.R
-    else R=R
+
+    beta = final.beta
     if (median(svd(final.D)$d)<10) D=final.D
     else D=D
-    V <- Z%*%D%*%t(Z)+R
+    if (final.sigma > 0) sigma = final.sigma
+    else sigma = sigma
     Dinv <- ginv(D)
-    Rinv <- ginv(R)
-    Vinv <- ginv(V)
-    final.lnL <- -2*(n/2*log2(2*pi))-(1/2)*(sum(update.lnL1)+log2(det(R))-(n*log2(det(D)))-sum(update.lnL2))
-    AICLaplace <- 2*76-2*final.lnL
-    #names(out) <- c("iteration","norm","beta","R","D","MeanETauSquare","MeanETauSquareMinus")
-    #print(list(final.beta,final.R,final.D))
+
     a <- a+1
   }
 
   return(list(
     iterations = a,
-    beta = final.beta,
-    R = R,
+    beta = beta,
     D = D,
-    median_eigen = median(svd(R)$d),
-    log_lik = final.lnL,
-    AIC = AICLaplace
+    sigma = sigma,
+    norm = nrm
   ))
 
 }
-
-#
