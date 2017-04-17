@@ -4,8 +4,8 @@
 \alias{lmm.ep.em}
 \title{Title}
 \usage{
-lmm.ep.em(y, X, Z, beta, R, D, sigma, cores = 3, nu = 3, nrm = 100,
-  maxiter = 500, first_parallel = FALSE, second_parallel = FALSE)
+lmm.ep.em(y, X, Z, beta, R, D, sigma, nu = 3, nrm = 100, maxiter = 500,
+  first_parallel = FALSE, second_parallel = FALSE, cores = 8)
 }
 \arguments{
 \item{y}{desc1}

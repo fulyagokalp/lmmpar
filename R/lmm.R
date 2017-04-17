@@ -34,10 +34,18 @@
 
 #Reference paper: Schafer, J.L.S., 1998, some improved procedures for linear mixed models
 #Ui, Wi and beta is calculated in parallel form. Then,sigma and D are calculated with final beta
-lmm.ep.em <- function(y, X, Z, beta, R, D, sigma, cores = 3, nu=3, nrm=100, maxiter=500, first_parallel=FALSE, second_parallel=FALSE){
-  #first_parallel <- TRUE
+lmm.ep.em <- function(
+  y, X, Z,
+  beta, R, D, sigma,
+  nu = 3, nrm = 100, maxiter = 500,
+  first_parallel = FALSE, second_parallel = FALSE,
+  cores = 8
+){
 
-  doParallel::registerDoParallel(cores)
+  # library("doParallel")
+  # registerDoParallel(cores)
+  # library("doMC")
+  # registerDoMC(cores)
 
   a <- 0
   p = nrow(beta)
@@ -63,6 +71,7 @@ lmm.ep.em <- function(y, X, Z, beta, R, D, sigma, cores = 3, nu=3, nrm=100, maxi
     #It is the parallel version of ith_ans = lapply(1:n, function(i) {} )
     ith_ans = plyr::llply(1:n, function(i) {
       #E Step
+      # print(paste("E", i))
 
       U.i <- ginv(Dinv+(t(Z[,,i])%*%Rinv%*%Z[,,i]))
       W.i <- Rinv-(Rinv%*%Z[,,i]%*%U.i%*%t(Z[,,i])%*%Rinv)
@@ -72,6 +81,8 @@ lmm.ep.em <- function(y, X, Z, beta, R, D, sigma, cores = 3, nu=3, nrm=100, maxi
       update.beta.first.i <- t(X[,,i])%*%W.i%*%X[,,i]
       update.beta.second.i <- t(X[,,i])%*%W.i%*%y[,i]
 
+      # print(paste("E", i, "end"))
+      browser()
       return(list(
         uU  = U.i,
         uW  = W.i,
@@ -117,10 +128,16 @@ lmm.ep.em <- function(y, X, Z, beta, R, D, sigma, cores = 3, nu=3, nrm=100, maxi
     nrm <- norm(final.beta-beta)
 
     beta = final.beta
-    if (median(svd(final.D)$d)<10) D=final.D
-    else D=D
-    if (final.sigma > 0) sigma = final.sigma
-    else sigma = sigma
+    if (median(svd(final.D)$d)<10) {
+      D=final.D
+    } else {
+      D=D
+    }
+    if (final.sigma > 0) {
+      sigma = final.sigma
+    } else {
+      sigma = sigma
+    }
     Dinv <- ginv(D)
 
     a <- a+1
