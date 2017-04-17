@@ -1,9 +1,12 @@
 context("single_example")
 
+# library(doParallel)
+# registerDoParallel(cores = 8)
+
 test_that("single example", {
 
 
-  n <- 100
+  n <- 100000
   m <- 4
   N <- n*m
   p <- 2
@@ -40,9 +43,9 @@ test_that("single example", {
   #Z <- matrix(c(1,1,1,1,8,10,12,14),m,p)
   #X <- matrix(c(1,1,1,1,8,10,12,14),m,p)
 
-  #X2 <- rep(c(8,10,12,14) ,n)
-  #Z2 <- rep(c(8,10,12,14) ,n)
-  #subject <- rep(c(1:n),each=m)
+  X2 <- rep(c(8,10,12,14) ,n)
+  Z2 <- rep(c(8,10,12,14) ,n)
+  subject <- rep(c(1:n),each=m)
 
   #VarBi <- (1+(c^2-1)*pb)*D
   #VarEi <- (1+(c^2-1)*pe)*sigma*R
@@ -88,19 +91,48 @@ test_that("single example", {
   # )
   # )
 
-  system.time(ans.gauss <- lmm.ep.em(
-    y,
-    X,
-    Z,
-    beta = beta,
-    R = R,
-    D = D,
-    first_parallel = FALSE,
-    second_parallel = FALSE,
-    sigma = sigma
+  first_second <- expand.grid(first = c(FALSE, TRUE), second = c(FALSE, TRUE))
+  # browser()
 
-  )
-)
+  timings <- list()
+  for (i in seq_len(nrow(first_second))) {
+    first <- first_second$first[i]
+    second <- first_second$second[i]
+    timing <- system.time({
+    # profvis::profvis({
+      ans.gauss <- lmm.ep.em(
+        y,
+        X,
+        Z,
+        beta = beta,
+        R = R,
+        D = D,
+        first_parallel = first,
+        second_parallel = second,
+        sigma = sigma
+      )
+      print(ans.gauss)
+    }) %>% print()
+
+    timing <- as.list(timing)
+    timing$first <- first
+    timing$second <- second
+    timings[[i]] <- timing
+
+    expect_true(TRUE)
+  }
+
+  cat("\n")
+  print(as.data.frame(do.call(rbind, timings)))
+
+  print(pryr::object_size(y))
+  print(pryr::object_size(X))
+  print(pryr::object_size(Z))
+  print(pryr::object_size(R))
+  print(pryr::object_size(D))
+
+  # browser()
+
 
 
   Y <- as.vector(y)
@@ -115,6 +147,6 @@ test_that("single example", {
 
   # expect_true(abs(AICGauss - ans$AIC) < 10)
 
-  expect_equal(length(ans), 7)
+  # expect_equal(length(ans), 7)
 
 })
