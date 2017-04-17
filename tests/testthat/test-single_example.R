@@ -6,7 +6,7 @@ context("single_example")
 test_that("single example", {
 
 
-  n <- 10000
+  n <- 100000
   m <- 4
   N <- n*m
   p <- 2
@@ -92,6 +92,7 @@ test_that("single example", {
   # )
 
   first_second <- expand.grid(first = c(FALSE, TRUE), second = c(FALSE, TRUE))
+  # browser()
 
   timings <- list()
   for (i in seq_len(nrow(first_second))) {
@@ -113,16 +114,17 @@ test_that("single example", {
       print(ans.gauss)
     }) %>% print()
 
-    # timing <- as.list(timing)
-    # timing$first <- first
-    # timing$second <- second
-    # timings[[i]] <- timing
+    timing <- as.list(timing)
+    timing$first <- first
+    timing$second <- second
+    timings[[i]] <- timing
 
     expect_true(TRUE)
   }
 
   cat("\n")
   print(as.data.frame(do.call(rbind, timings)))
+
   print(pryr::object_size(y))
   print(pryr::object_size(X))
   print(pryr::object_size(Z))
