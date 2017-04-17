@@ -82,12 +82,11 @@ lmm.ep.em <- function(y, X, Z, beta, R, D, sigma, cores = 3, nu=3, nrm=100, maxi
 
     for(i in 1:n) {
       ith_ans_i = ith_ans[[i]]
-      update.beta.first[,,i] = ith_ans_i$ub1
-      update.beta.second[,,i] = ith_ans_i$ub2
       update.U[,,i] = ith_ans_i$uU
       update.W[,,i] = ith_ans_i$uW
     }
-    final.beta <- ginv(apply(update.beta.first, c(1,2), sum))%*%apply(update.beta.second, c(1,2), sum)
+
+    final.beta <- ginv(Reduce('+',lapply(ith_ans, function(x) x$ub1)))%*%Reduce('+',lapply(ith_ans, function(x) x$ub2))
     #CM Step 2 Fix beta=betaHat
     #Update sigma
     ith_ans2 = plyr::llply(1:n, function(i){
@@ -107,20 +106,13 @@ lmm.ep.em <- function(y, X, Z, beta, R, D, sigma, cores = 3, nu=3, nrm=100, maxi
       ))
     }, .parallel = second_parallel)
 
-
-    for(i in 1:n) {
-      ith_ans_i2 = ith_ans2[[i]]
-      update.sigma[i] = ith_ans_i2$usigma
-      update.D[,,i] = ith_ans_i2$uD
-
-    }
-
     #browser()
 
     #Final calculations
 
-    final.D <- (1/n)*(apply(update.D, c(1,2), sum))
-    final.sigma <- (1/N)*sum(update.sigma)
+    final.D <- (1/n)*Reduce('+', lapply(ith_ans2, function(x) x$uD))
+    final.sigma <- as.numeric((1/N)*Reduce('+', (lapply(ith_ans2, function(x) x$usigma))))
+
     ratio <- final.sigma/sigma
     nrm <- norm(final.beta-beta)
 
