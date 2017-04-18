@@ -44,8 +44,6 @@ lmm.ep.em <- function(
 
   library("doParallel")
   registerDoParallel(cores)
-  # library("doMC")
-  # registerDoMC(cores)
 
   a <- 0
   p = nrow(beta)
@@ -69,50 +67,34 @@ lmm.ep.em <- function(
     if (a>maxiter||nrm<0.0005) {break}
 
     #It is the parallel version of ith_ans = lapply(1:n, function(i) {} )
-    # ith_ans = plyr::llply(1:n, function(i) {
-    ith_ans = plyr::llply(1:8, function(core) {
+    ith_ans = plyr::llply(1:cores, function(core) {
       if (core > n) stop("make n bigger!")
-      positions <- seq(from = core, to = n, by = 8)
+      positions <- seq(from = core, to = n, by = cores)
 
       ret <- lapply(positions, function(i) {
         U.i <- ginv(Dinv+(t(Z[,,i])%*%Rinv%*%Z[,,i]))
-        U.i
+        list(
+          pos = i,
+          u_val = U.i
+        )
       })
       return(ret)
-
-      #E Step
-      # print(paste("E", i))
-
-      # W.i <- Rinv-(Rinv%*%Z[,,i]%*%U.i%*%t(Z[,,i])%*%Rinv)
-
-      #Update beta
-
-      # update.beta.first.i <- t(X[,,i])%*%W.i%*%X[,,i]
-      # update.beta.second.i <- t(X[,,i])%*%W.i%*%y[,i]
-
-      # print(paste("E", i, "end"))
-      # return(U.i)
-      # return(list(
-      #   uU  = U.i,
-      #   uW  = W.i,
-      #   ub1 = update.beta.first.i,
-      #   ub2 = update.beta.second.i
-      # ))
     }, .parallel = first_parallel)
 
     ith_ans <- unlist(ith_ans, recursive = FALSE)
-    # browser()
+    u_vals <- lapply(ith_ans, "[[", "u_val")
+    positions <- lapply(ith_ans, "[[", "pos")
+    true_order <- order(unlist(positions))
+    u_vals <- u_vals[true_order]
 
+    #E Step
     ub1 <- numeric()
     ubfi <- array(0, c(p,p))
     ubsi <- array(0, c(p,1))
     for(i in 1:n) {
-      # ith_ans_i = ith_ans[[i]]
-      # update.U[,,i] = ith_ans_i$uU
-      # update.W[,,i] = ith_ans_i$uW
-      U.i <- ith_ans[[i]]
+      U.i <- u_vals[[i]]
       W.i <- Rinv - (Rinv %*% Z[,,i] %*% U.i %*% t(Z[,,i]) %*% Rinv)
-      # browser()
+      #Update beta
       ubfi <- ubfi + t(X[,,i])%*%W.i%*%X[,,i]
       ubsi <- ubsi + t(X[,,i])%*%W.i%*%y[,i]
       update.U[,,i] = U.i
@@ -120,14 +102,11 @@ lmm.ep.em <- function(
     }
     final.beta <- ginv(ubfi) %*% ubsi
 
-    # final.beta <- ginv(Reduce('+',lapply(ith_ans, function(x) x$ub1)))%*%Reduce('+',lapply(ith_ans, function(x) x$ub2))
-
     #CM Step 2 Fix beta=betaHat
     #Update sigma
-    # ith_ans2 = plyr::llply(1:n, function(i){
-    ith_ans2 = plyr::llply(1:8, function(core){
+    ith_ans2 = plyr::llply(1:cores, function(core){
       if (core > n) stop("make n bigger!")
-      positions <- seq(from = core, to = n, by = 8)
+      positions <- seq(from = core, to = n, by = cores)
 
       sigma_total <- 0
       update.D <- array(0, c(q,q))
@@ -145,14 +124,12 @@ lmm.ep.em <- function(
       #CM Step 3
       #Update D
 
-      #browser()
       return(list(
-        usigma  = sigma,
+        usigma  = sigma_total,
         uD  = update.D
       ))
     }, .parallel = second_parallel)
 
-    #browser()
 
     #Final calculations
 

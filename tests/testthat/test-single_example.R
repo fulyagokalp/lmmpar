@@ -1,12 +1,10 @@
 context("single_example")
 
-# library(doParallel)
-# registerDoParallel(cores = 8)
 
 test_that("single example", {
 
 
-  n <- 100000
+  n <- 10000
   m <- 4
   N <- n*m
   p <- 2
@@ -66,31 +64,6 @@ test_that("single example", {
  # }
 
 
-  # system.time(ans <- lmm.t.em.par(
-  #   y,
-  #   X,
-  #   Z,
-  #   beta = beta,
-  #   R = R,
-  #   D = D,
-  #   first_parallel = TRUE,
-  #   sigma = sigma
-  # )
-  # )
-
-  # system.time(ans2 <- lmm.t.em.par2(
-  #   y,
-  #   X,
-  #   Z,
-  #   beta = beta,
-  #   R = R,
-  #   D = D,
-  #   first_parallel = TRUE,
-  #   second_parallel = TRUE,
-  #   sigma = sigma
-  # )
-  # )
-
   first_second <- expand.grid(first = c(FALSE, TRUE), second = c(FALSE, TRUE))
   # browser()
 
@@ -125,14 +98,11 @@ test_that("single example", {
   cat("\n")
   print(as.data.frame(do.call(rbind, timings)))
 
-  print(pryr::object_size(y))
-  print(pryr::object_size(X))
-  print(pryr::object_size(Z))
-  print(pryr::object_size(R))
-  print(pryr::object_size(D))
-
-  # browser()
-
+  # print(pryr::object_size(y))
+  # print(pryr::object_size(X))
+  # print(pryr::object_size(Z))
+  # print(pryr::object_size(R))
+  # print(pryr::object_size(D))
 
 
   Y <- as.vector(y)
