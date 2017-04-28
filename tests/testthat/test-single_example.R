@@ -4,10 +4,10 @@ context("single_example")
 test_that("single example", {
 
 
-  n <- 10000
+  n <- 1000000
   m <- 4
   N <- n*m
-  p <- 2
+  p <- 30
   q <- 2
   c <- 2  #contamination factor
   pb <- 0
@@ -16,7 +16,8 @@ test_that("single example", {
 
   #Initial parameters
   #beta = matrix(c(1,2,1),p+1,1)  #It should have p+1 values
-  beta = matrix(c(10,0,1),p+1,1)
+  # beta = matrix(c(10,0,1),p+1,1)
+  beta = matrix(rmnorm(p+1, 10, 1),p+1,1)
   R = diag(m)
   D = matrix(c(16, 0, 0, 0.025), nrow=q)
   sigma=1
@@ -64,13 +65,10 @@ test_that("single example", {
  # }
 
 
-  first_second <- expand.grid(first = c(FALSE, TRUE), second = c(FALSE, TRUE))
-  # browser()
+  cores_vals <- c(1, 2, 4, 8)
 
   timings <- list()
-  for (i in seq_len(nrow(first_second))) {
-    first <- first_second$first[i]
-    second <- first_second$second[i]
+  for (i in seq_along(cores_vals)) {
     timing <- system.time({
     # profvis::profvis({
       ans.gauss <- lmm.ep.em(
@@ -80,16 +78,14 @@ test_that("single example", {
         beta = beta,
         R = R,
         D = D,
-        first_parallel = first,
-        second_parallel = second,
+        cores = cores_vals[i],
         sigma = sigma
       )
       print(ans.gauss)
     }) %>% print()
 
     timing <- as.list(timing)
-    timing$first <- first
-    timing$second <- second
+    timing$cores <- cores_vals[i]
     timings[[i]] <- timing
 
     expect_true(TRUE)
