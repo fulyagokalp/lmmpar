@@ -4,7 +4,7 @@ context("single_example")
 test_that("single example", {
 
 
-  n <- 1000000
+  n <- 100000
   m <- 4
   N <- n*m
   p <- 30

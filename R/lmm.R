@@ -27,8 +27,6 @@
 #' @importFrom MASS ginv
 #' @importFrom mnormt rmnorm
 #' @importFrom stats median
-#' @import Rdsm
-#' @import parallel
 #' @export
 # ' @example
 # ' #example code here
@@ -44,13 +42,16 @@ lmm.ep.em <- function(
   cores = 8
 ){
 
-  library("Rdsm") # must be called for mgrinit to work
-  c2 <- makeCluster(cores)
-  mgrinit(c2)
-  on.exit({
-    stoprdsm(c2)
-  })
-  
+  cores <- floor(cores)
+  if (cores > 1) {
+    c2 <- parallel::makeCluster(cores)
+    on.exit({
+      parallel::stopCluster(c2)
+    })
+  } else {
+    c2 <- NULL
+  }
+
 
 
   a <- 0
@@ -68,27 +69,8 @@ lmm.ep.em <- function(
     if (a>maxiter||nrm<0.0005) {break}
 
     #It is the parallel version of ith_ans = lapply(1:n, function(i) {} )
-
-
-    # clusterExport(c2,"s")
-    # mgrmakevar(c2,"tot",1,1)
-    # tot[1,1] <- 0
-
-    # clusterEvalQ(c2,s(1000))
-    # tot[1,1]  # should be 2000, but likely far from it
-
-    # ubfi_total[,] <- 0
-    # ubsi_total[,] <- 0
-    # sigma_total[,] <- 0
-    # D_total[,] <- 0
-
-    ith_thread_fn <- function() {
-      require(Rdsm)
-
-      # positions <- seq(from = myinfo$id, to = n, by = myinfo$nwrkrs)
-      # cat(positions, file = "positions")
-      positions <- getidxs(n)
-      # cat(positions, file = paste("positions", myinfo$id))
+    ith_thread_fn <- function(core_i) {
+      positions <- parallel::splitIndices(n, cores)[[core_i]]
 
       ubfi_sum <- array(0, c(p,p))
       ubsi_sum <- array(0, c(p,1))
@@ -135,7 +117,11 @@ lmm.ep.em <- function(
       )
     }
 
-    answers <- clusterCall(c2, ith_thread_fn)
+    if (cores == 1) {
+      answers <- lapply(1, ith_thread_fn)
+    } else {
+      answers <- parallel::clusterApply(c2, 1:cores, ith_thread_fn)
+    }
 
     ubfi_total <- array(0,c(p,p)) + Reduce('+', lapply(answers, `[[`, "ubfi_sum"))
     ubsi_total <- array(0,c(p,1)) + Reduce('+', lapply(answers, `[[`, "ubsi_sum"))
