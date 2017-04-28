@@ -50,6 +50,7 @@ lmm.ep.em <- function(
   on.exit({
     stoprdsm(c2)
   })
+  
 
 
   a <- 0
