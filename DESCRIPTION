@@ -18,9 +18,15 @@ Imports: MASS,
     mvtnorm,
     plyr,
     psych,
+<<<<<<< HEAD
     doParallel
 Suggests: testthat,
     knitr,
     rmarkdown
+=======
+    parallel
+Suggests: testthat,
+    knitr
+>>>>>>> ad6b442af5b66d0422d504205bc330082fa8a30a
 RoxygenNote: 6.0.1
 VignetteBuilder: knitr
