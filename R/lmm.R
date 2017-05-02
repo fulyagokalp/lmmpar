@@ -1,4 +1,3 @@
-
 # https://github.com/fulyagokalp/lmmpar
 # devtools::install_github("fulyagokalp/lmmpar")
 
@@ -34,10 +33,13 @@
 
 #Reference paper: Schafer, J.L.S., 1998, some improved procedures for linear mixed models
 #Ui, Wi and beta is calculated in parallel form. Then,sigma and D are calculated with final beta
-lmm.ep.em <- function(y, X, Z, beta, R, D, sigma, cores = 3, nu=3, nrm=100, maxiter=500, first_parallel=FALSE, second_parallel=FALSE){
-  #first_parallel <- TRUE
-
-  doParallel::registerDoParallel(cores)
+lmm.ep.em <- function(
+  y, X, Z,
+  beta, R, D, sigma,
+  nu = 3, nrm = 100, maxiter = 500,
+  first_parallel = FALSE, second_parallel = FALSE,
+  cores = 8
+){
 
   a <- 0
   p = nrow(beta)
@@ -49,81 +51,105 @@ lmm.ep.em <- function(y, X, Z, beta, R, D, sigma, cores = 3, nu=3, nrm=100, maxi
   Dinv <- ginv(D)
   Rinv <- ginv(R)
 
-  update.beta.first <- array(0,c(p,p,n))
-  update.beta.second <- array(0,c(p,1,n))
-  update.U <- array(0, c(q, q, n))
-  update.W <- array(0, c(m, m, n))
-  update.sigma <- matrix(0, n, 1)
-  update.D <- array(0,c(q,q,n))
+  cores <- floor(cores)
+  if (cores > 1) {
+    c2 <- parallel::makeCluster(cores)
+    on.exit({
+      parallel::stopCluster(c2)
+    })
+    env <- base::environment()
+    parallel::clusterExport(c2, ls(envir = env), envir = env)
+  } else {
+    c2 <- NULL
+  }
 
 
   repeat {
     if (a>maxiter||nrm<0.0005) {break}
 
     #It is the parallel version of ith_ans = lapply(1:n, function(i) {} )
-    ith_ans = plyr::llply(1:n, function(i) {
-      #E Step
+    ith_thread_fn <- function(core_i) {
+      positions <- parallel::splitIndices(n, cores)[[core_i]]
 
-      U.i <- ginv(Dinv+(t(Z[,,i])%*%Rinv%*%Z[,,i]))
-      W.i <- Rinv-(Rinv%*%Z[,,i]%*%U.i%*%t(Z[,,i])%*%Rinv)
+      ubfi_sum <- array(0, c(p,p))
+      ubsi_sum <- array(0, c(p,1))
+      sigma_sum <- 0
+      D_sum <- array(0, c(q,q))
 
-      #Update beta
+      for (i in positions) {
+        U_i <- MASS::ginv(
+          Dinv + (t(Z[,,i]) %*% Rinv %*% Z[,,i])
+        )
+        W_i <- Rinv - (Rinv %*% Z[,,i] %*% U_i %*% t(Z[,,i]) %*% Rinv)
 
-      update.beta.first.i <- t(X[,,i])%*%W.i%*%X[,,i]
-      update.beta.second.i <- t(X[,,i])%*%W.i%*%y[,i]
+        ubfi_sum <- ubfi_sum + t(X[,,i]) %*% W_i %*% X[,,i]
+        ubsi_sum <- ubsi_sum + t(X[,,i]) %*% W_i %*% y[,i]
 
-      return(list(
-        uU  = U.i,
-        uW  = W.i,
-        ub1 = update.beta.first.i,
-        ub2 = update.beta.second.i
-      ))
-    }, .parallel = first_parallel)
+        #Update u (random effect)
+        b_i <- U_i %*% t(Z[,,i]) %*% Rinv %*% (y[,i] - X[,,i] %*% beta)
+        sigma_sum <- sigma_sum + as.numeric(
+          t(y[,i] - X[,,i] %*% beta) %*% W_i %*% (y[,i] - X[,,i] %*% beta)
+        )
+        D_sum <- D_sum + (1 / sigma) * (b_i %*% t(b_i) + U_i)
+      }
 
-    for(i in 1:n) {
-      ith_ans_i = ith_ans[[i]]
-      update.U[,,i] = ith_ans_i$uU
-      update.W[,,i] = ith_ans_i$uW
+      list(
+        ubfi_sum = ubfi_sum,
+        ubsi_sum = ubsi_sum,
+        sigma_sum = sigma_sum,
+        D_sum = D_sum
+      )
     }
 
-    final.beta <- ginv(Reduce('+',lapply(ith_ans, function(x) x$ub1)))%*%Reduce('+',lapply(ith_ans, function(x) x$ub2))
-    #CM Step 2 Fix beta=betaHat
-    #Update sigma
-    ith_ans2 = plyr::llply(1:n, function(i){
-      update.sigma.i <- t(y[,i]-X[,,i]%*%final.beta)%*%update.W[,,i]%*%(y[,i]-X[,,i]%*%final.beta)
+    if (cores == 1) {
+      answers <- lapply(1, ith_thread_fn)
+    } else {
+      answers <- parallel::clusterApply(c2, 1:cores, ith_thread_fn)
+    }
 
-      #Update u (random effect)
-      u.i <- update.U[,,i]%*%t(Z[,,i])%*%Rinv%*%(y[,i]-X[,,i]%*%final.beta)
-      #CM Step 3
-      #Update D
+    ubfi_total <- array(0,c(p,p)) + Reduce('+', lapply(answers, `[[`, "ubfi_sum"))
+    ubsi_total <- array(0,c(p,1)) + Reduce('+', lapply(answers, `[[`, "ubsi_sum"))
+    sigma_total <- 0 + Reduce('+', lapply(answers, `[[`, "sigma_sum"))
+    D_total <- array(0,c(q,q)) + Reduce('+', lapply(answers, `[[`, "D_sum"))
 
-      update.D.i <- (1/sigma)*(u.i%*%t(u.i)+update.U[,,i])
-      #browser()
-      return(list(
-        usigma  = update.sigma.i,
-        uD  = update.D.i
+    # str(list(
+    #   ubfi_total = ubfi_total,
+    #   ubsi_total = ubsi_total,
+    #   sigma_total = sigma_total,
+    #   D_total = D_total
+    # ))
 
-      ))
-    }, .parallel = second_parallel)
-
-    #browser()
-
+    final.beta <- ginv(ubfi_total) %*% ubsi_total
     #Final calculations
 
-    final.D <- (1/n)*Reduce('+', lapply(ith_ans2, function(x) x$uD))
-    final.sigma <- as.numeric((1/N)*Reduce('+', (lapply(ith_ans2, function(x) x$usigma))))
+    final.D <- (1/n) * as.matrix(D_total)
+    final.sigma <- as.numeric(
+      (1 / N) * as.matrix(sigma_total)[1,1]
+    )
 
-    ratio <- final.sigma/sigma
-    nrm <- norm(final.beta-beta)
+    ratio <- final.sigma / sigma
+    nrm <- norm(final.beta - beta)
+
+    # str(list(
+    #   final.beta = final.beta,
+    #   final.D = final.D,
+    #   final.sigma = final.sigma
+    # ))
 
     beta = final.beta
-    if (median(svd(final.D)$d)<10) D=final.D
-    else D=D
-    if (final.sigma > 0) sigma = final.sigma
-    else sigma = sigma
+    if (median(svd(final.D)$d)<10) {
+      D = final.D
+    } else {
+      D = D
+    }
+    if (final.sigma > 0) {
+      sigma = final.sigma
+    } else {
+      sigma = sigma
+    }
     Dinv <- ginv(D)
 
-    a <- a+1
+    a <- a + 1
   }
 
   return(list(

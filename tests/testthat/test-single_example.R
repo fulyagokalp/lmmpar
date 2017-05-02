@@ -1,9 +1,10 @@
 context("single_example")
 
+
 test_that("single example", {
 
 
-  n <- 100
+  n <- 1000
   m <- 4
   N <- n*m
   p <- 2
@@ -15,7 +16,8 @@ test_that("single example", {
 
   #Initial parameters
   #beta = matrix(c(1,2,1),p+1,1)  #It should have p+1 values
-  beta = matrix(c(10,0,1),p+1,1)
+  # beta = matrix(c(10,0,1),p+1,1)
+  beta = matrix(rmnorm(p+1, 10, 1),p+1,1)
   R = diag(m)
   D = matrix(c(16, 0, 0, 0.025), nrow=q)
   sigma=1
@@ -40,9 +42,9 @@ test_that("single example", {
   #Z <- matrix(c(1,1,1,1,8,10,12,14),m,p)
   #X <- matrix(c(1,1,1,1,8,10,12,14),m,p)
 
-  #X2 <- rep(c(8,10,12,14) ,n)
-  #Z2 <- rep(c(8,10,12,14) ,n)
-  #subject <- rep(c(1:n),each=m)
+  X2 <- rep(c(8,10,12,14) ,n)
+  Z2 <- rep(c(8,10,12,14) ,n)
+  subject <- rep(c(1:n),each=m)
 
   #VarBi <- (1+(c^2-1)*pb)*D
   #VarEi <- (1+(c^2-1)*pe)*sigma*R
@@ -55,52 +57,51 @@ test_that("single example", {
   #u <- array(0,dim=c(p,1,n))
 
   #for (i in 1:n){
-    # b <- rmnorm(1, rep(0, 2), VarBi)
-    # e <- rmnorm(1, rep(0, 4), VarEi)
+  # b <- rmnorm(1, rep(0, 2), VarBi)
+  # e <- rmnorm(1, rep(0, 4), VarEi)
 
-    # set.seed(i)
-    # y[,i] <- X%*%beta+Z%*%b+e
- # }
+  # set.seed(i)
+  # y[,i] <- X%*%beta+Z%*%b+e
+  # }
 
 
-  # system.time(ans <- lmm.t.em.par(
-  #   y,
-  #   X,
-  #   Z,
-  #   beta = beta,
-  #   R = R,
-  #   D = D,
-  #   first_parallel = TRUE,
-  #   sigma = sigma
-  # )
-  # )
+  cores_vals <- c(1,2,4)
 
-  # system.time(ans2 <- lmm.t.em.par2(
-  #   y,
-  #   X,
-  #   Z,
-  #   beta = beta,
-  #   R = R,
-  #   D = D,
-  #   first_parallel = TRUE,
-  #   second_parallel = TRUE,
-  #   sigma = sigma
-  # )
-  # )
+  timings <- list()
+  for (i in seq_along(cores_vals)) {
+    timing <- system.time({
+      # profvis::profvis({
+      ans.gauss <- lmm.ep.em(
+        y,
+        X,
+        Z,
+        beta = beta,
+        R = R,
+        D = D,
+        cores = cores_vals[i],
+        sigma = sigma
+      )
+      print(ans.gauss)
+    }) %>% print()
 
-  system.time(ans.gauss <- lmm.ep.em(
-    y,
-    X,
-    Z,
-    beta = beta,
-    R = R,
-    D = D,
-    first_parallel = FALSE,
-    second_parallel = FALSE,
-    sigma = sigma
+    timing <- as.list(timing)
+    timing$cores <- cores_vals[i]
+    timing$n <- n
+    timing$repeats <- m
+    timing$p <- p
+    timings[[i]] <- timing
 
-  )
-)
+    #expect_true(TRUE)
+  }
+
+  cat("\n")
+  print(as.data.frame(do.call(rbind, timings)))
+
+  # print(pryr::object_size(y))
+  # print(pryr::object_size(X))
+  # print(pryr::object_size(Z))
+  # print(pryr::object_size(R))
+  # print(pryr::object_size(D))
 
 
   Y <- as.vector(y)
@@ -115,6 +116,6 @@ test_that("single example", {
 
   # expect_true(abs(AICGauss - ans$AIC) < 10)
 
-  expect_equal(length(ans), 7)
+  # expect_equal(length(ans), 7)
 
 })
