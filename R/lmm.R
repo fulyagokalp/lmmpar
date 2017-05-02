@@ -42,18 +42,6 @@ lmm.ep.em <- function(
   cores = 8
 ){
 
-  cores <- floor(cores)
-  if (cores > 1) {
-    c2 <- parallel::makeCluster(cores)
-    on.exit({
-      parallel::stopCluster(c2)
-    })
-  } else {
-    c2 <- NULL
-  }
-
-
-
   a <- 0
   p = nrow(beta)
   n = ncol(y)
@@ -63,6 +51,18 @@ lmm.ep.em <- function(
 
   Dinv <- ginv(D)
   Rinv <- ginv(R)
+
+  cores <- floor(cores)
+  if (cores > 1) {
+    c2 <- parallel::makeCluster(cores)
+    on.exit({
+      parallel::stopCluster(c2)
+    })
+    env <- base::environment()
+    parallel::clusterExport(c2, ls(envir = env), envir = env)
+  } else {
+    c2 <- NULL
+  }
 
 
   repeat {
@@ -78,7 +78,7 @@ lmm.ep.em <- function(
       D_sum <- array(0, c(q,q))
 
       for (i in positions) {
-        U_i <- ginv(
+        U_i <- MASS::ginv(
           Dinv + (t(Z[,,i]) %*% Rinv %*% Z[,,i])
         )
         W_i <- Rinv - (Rinv %*% Z[,,i] %*% U_i %*% t(Z[,,i]) %*% Rinv)
@@ -93,21 +93,6 @@ lmm.ep.em <- function(
         )
         D_sum <- D_sum + (1 / sigma) * (b_i %*% t(b_i) + U_i)
       }
-
-      # Sys.sleep(runif(1))
-      # cat("start lock: ", myinfo$id, "\n", file = paste("start", myinfo$id))
-      # rdsmlock("answer_lock")
-      # cat("asdf", file = paste("ans-1-", myinfo$id))
-      # ubfi_total[,] <- ubfi_total[,] + ubfi_sum
-      # cat("asdf", file = paste("ans-2-", myinfo$id))
-      # ubsi_total[,] <- ubsi_total[,] + ubsi_sum
-      # cat("asdf", file = paste("ans-3-", myinfo$id))
-      # sigma_total[,] <- sigma_total[,] + array(sigma_sum, c(1,1))
-      # cat("asdf", file = paste("ans-4-", myinfo$id))
-      # D_total[,] <- D_total[,] + D_sum
-      # cat("asdf", file = paste("ans-5-", myinfo$id))
-      # rdsmunlock("answer_lock")
-      # cat("end lock: ", myinfo$id, "\n", file = paste("end", myinfo$id))
 
       list(
         ubfi_sum = ubfi_sum,
