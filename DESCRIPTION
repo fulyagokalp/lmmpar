@@ -19,5 +19,7 @@ Imports: MASS,
     plyr,
     psych,
     parallel
-Suggests: testthat
+Suggests: testthat,
+    knitr
 RoxygenNote: 6.0.1
+VignetteBuilder: knitr
