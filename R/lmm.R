@@ -42,18 +42,6 @@ lmm.ep.em <- function(
   cores = 8
 ){
 
-  cores <- floor(cores)
-  if (cores > 1) {
-    c2 <- parallel::makeCluster(cores)
-    on.exit({
-      parallel::stopCluster(c2)
-    })
-  } else {
-    c2 <- NULL
-  }
-
-
-
   a <- 0
   p = nrow(beta)
   n = ncol(y)
@@ -63,6 +51,18 @@ lmm.ep.em <- function(
 
   Dinv <- ginv(D)
   Rinv <- ginv(R)
+
+  cores <- floor(cores)
+  if (cores > 1) {
+    c2 <- parallel::makeCluster(cores)
+    on.exit({
+      parallel::stopCluster(c2)
+    })
+    env <- base::environment()
+    parallel::clusterExport(c2, ls(envir = env), envir = env)
+  } else {
+    c2 <- NULL
+  }
 
 
   repeat {
@@ -78,7 +78,7 @@ lmm.ep.em <- function(
       D_sum <- array(0, c(q,q))
 
       for (i in positions) {
-        U_i <- ginv(
+        U_i <- MASS::ginv(
           Dinv + (t(Z[,,i]) %*% Rinv %*% Z[,,i])
         )
         W_i <- Rinv - (Rinv %*% Z[,,i] %*% U_i %*% t(Z[,,i]) %*% Rinv)
