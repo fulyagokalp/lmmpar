@@ -190,6 +190,9 @@ Similarly,
 
 Note that (\ref{eq:19}), (\ref{eq:20}), and (\ref{eq:21}) include the estimations of $\uU_i, \uW_i, and \uu_i$.
 
+\subsection{Divide and Combine}
+\label{DvC}
+
 The different processes are currently managed by the `parallel` package using `parallel::makeCluster(cores)` and `parallel::clusterApply()`.  Other common packages such as `plyr` and `foreach` wrap around the `parallel` package using the `doParallel` package.  By calling `parallel` directly, we avoid any computational overhead and unnecessary dependencies.
 
 
@@ -427,6 +430,8 @@ Similarly,
 \end{equation}
 
 Note that (\ref{eq:19}), (\ref{eq:20}), and (\ref{eq:21}) include the estimations of $\uU_i, \uW_i, and \uu_i$.
+
+
 
 The different processes are currently managed by the `parallel` package using `parallel::makeCluster(cores)` and `parallel::clusterApply()`.  Other common packages such as `plyr` and `foreach` wrap around the `parallel` package using the `doParallel` package.  By calling `parallel` directly, we avoid any computational overhead and unnecessary dependencies.
 
