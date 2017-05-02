@@ -94,21 +94,6 @@ lmm.ep.em <- function(
         D_sum <- D_sum + (1 / sigma) * (b_i %*% t(b_i) + U_i)
       }
 
-      # Sys.sleep(runif(1))
-      # cat("start lock: ", myinfo$id, "\n", file = paste("start", myinfo$id))
-      # rdsmlock("answer_lock")
-      # cat("asdf", file = paste("ans-1-", myinfo$id))
-      # ubfi_total[,] <- ubfi_total[,] + ubfi_sum
-      # cat("asdf", file = paste("ans-2-", myinfo$id))
-      # ubsi_total[,] <- ubsi_total[,] + ubsi_sum
-      # cat("asdf", file = paste("ans-3-", myinfo$id))
-      # sigma_total[,] <- sigma_total[,] + array(sigma_sum, c(1,1))
-      # cat("asdf", file = paste("ans-4-", myinfo$id))
-      # D_total[,] <- D_total[,] + D_sum
-      # cat("asdf", file = paste("ans-5-", myinfo$id))
-      # rdsmunlock("answer_lock")
-      # cat("end lock: ", myinfo$id, "\n", file = paste("end", myinfo$id))
-
       list(
         ubfi_sum = ubfi_sum,
         ubsi_sum = ubsi_sum,
