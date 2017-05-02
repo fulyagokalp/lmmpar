@@ -4,7 +4,7 @@ context("single_example")
 test_that("single example", {
 
 
-  n <- 100000
+  n <- ifelse(interactive(), 10000, 1000)
   m <- 4
   N <- n*m
   p <- 30
