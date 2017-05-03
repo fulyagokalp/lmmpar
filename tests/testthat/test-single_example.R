@@ -4,11 +4,7 @@ context("single_example")
 test_that("single example", {
 
 
-<<<<<<< HEAD
-  n <- 1000
-=======
   n <- ifelse(interactive(), 10000, 1000)
->>>>>>> ad6b442af5b66d0422d504205bc330082fa8a30a
   m <- 4
   N <- n*m
   p <- 30
@@ -61,7 +57,6 @@ test_that("single example", {
   #u <- array(0,dim=c(p,1,n))
 
   #for (i in 1:n){
-<<<<<<< HEAD
   # b <- rmnorm(1, rep(0, 2), VarBi)
   # e <- rmnorm(1, rep(0, 4), VarEi)
 
@@ -70,27 +65,12 @@ test_that("single example", {
   # }
 
 
-  cores_vals <- c(1,2,4)
-=======
-    # b <- rmnorm(1, rep(0, 2), VarBi)
-    # e <- rmnorm(1, rep(0, 4), VarEi)
-
-    # set.seed(i)
-    # y[,i] <- X%*%beta+Z%*%b+e
- # }
-
-
   cores_vals <- c(1, 2, 4, 8)
->>>>>>> ad6b442af5b66d0422d504205bc330082fa8a30a
 
   timings <- list()
   for (i in seq_along(cores_vals)) {
     timing <- system.time({
-<<<<<<< HEAD
       # profvis::profvis({
-=======
-    # profvis::profvis({
->>>>>>> ad6b442af5b66d0422d504205bc330082fa8a30a
       ans.gauss <- lmm.ep.em(
         y,
         X,
@@ -106,18 +86,9 @@ test_that("single example", {
 
     timing <- as.list(timing)
     timing$cores <- cores_vals[i]
-<<<<<<< HEAD
-    timing$n <- n
-    timing$repeats <- m
-    timing$p <- p
-    timings[[i]] <- timing
-
-    #expect_true(TRUE)
-=======
     timings[[i]] <- timing
 
     expect_true(TRUE)
->>>>>>> ad6b442af5b66d0422d504205bc330082fa8a30a
   }
 
   cat("\n")
