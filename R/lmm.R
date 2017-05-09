@@ -11,6 +11,8 @@
 # # install.packages("doParallel")
 # library(doParallel)
 # library(psych)
+# library(matrixcalc) #Is positive definite package
+# library(magrittr)
 
 
 #' Title
@@ -36,8 +38,7 @@
 lmm.ep.em <- function(
   y, X, Z,
   beta, R, D, sigma,
-  nu = 3, nrm = 100, maxiter = 500,
-  first_parallel = FALSE, second_parallel = FALSE,
+  nrm = 100, maxiter = 500,
   cores = 8
 ){
 
@@ -137,16 +138,25 @@ lmm.ep.em <- function(
     # ))
 
     beta = final.beta
-    if (median(svd(final.D)$d)<10) {
-      D = final.D
-    } else {
-      D = D
-    }
-    if (final.sigma > 0) {
-      sigma = final.sigma
-    } else {
-      sigma = sigma
-    }
+
+    final.D=round(final.D,10)
+    final.D[!is.positive.definite(final.D)] = D    #If the matrix is not positive definite, use the initial
+    D = final.D
+
+    # if (median(svd(final.D)$d)<10) {
+    #   D = final.D
+    # } else {
+    #   D = D
+    # }
+
+    final.sigma[final.sigma < 0 ] = 1
+    sigma = final.sigma
+
+    # if (final.sigma > 0) {
+    #   sigma = final.sigma
+    # } else {
+    #   sigma = sigma
+    # }
     Dinv <- ginv(D)
 
     a <- a + 1
