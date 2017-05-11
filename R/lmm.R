@@ -18,7 +18,7 @@
 #' Title
 #'
 #' description
-#' @param y desc1
+#' @param y matrix of responses with observations/subjects on column and repeats for each observation/subject on rows. It is (m $\times$ n) dimensional.
 #' @param X desc1
 #' @param Z desc1
 #' @param beta desc1
@@ -54,7 +54,8 @@ lmm.ep.em <- function(
 
   cores <- floor(cores)
   if (cores > 1) {
-    c2 <- parallel::makeCluster(cores)
+    #c2 <- parallel::makeCluster(cores)
+    c2 <- parallel::makeCluster(cores, type="FORK")
     on.exit({
       parallel::stopCluster(c2)
     })
