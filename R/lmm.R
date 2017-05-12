@@ -79,18 +79,22 @@ lmm.ep.em <- function(
       D_sum <- array(0, c(q,q))
 
       for (i in positions) {
-        U_i <- MASS::ginv(
-          Dinv + (t(Z[,,i]) %*% Rinv %*% Z[,,i])
-        )
-        W_i <- Rinv - (Rinv %*% Z[,,i] %*% U_i %*% t(Z[,,i]) %*% Rinv)
+        X_i = subset(X, subject == i)
+        Z_i = subset(Z, subject == i)
+        y_i = subset(y, subject == i)
 
-        ubfi_sum <- ubfi_sum + t(X[,,i]) %*% W_i %*% X[,,i]
-        ubsi_sum <- ubsi_sum + t(X[,,i]) %*% W_i %*% y[,i]
+        U_i <- MASS::ginv(
+          Dinv + (t(Z_i) %*% Rinv %*% Z_i)
+        )
+        W_i <- Rinv - (Rinv %*% Z_i %*% U_i %*% t(Z_i) %*% Rinv)
+
+        ubfi_sum <- ubfi_sum + t(X_i) %*% W_i %*% X_i
+        ubsi_sum <- ubsi_sum + t(X_i) %*% W_i %*% y_i
 
         #Update u (random effect)
-        b_i <- U_i %*% t(Z[,,i]) %*% Rinv %*% (y[,i] - X[,,i] %*% beta)
+        b_i <- U_i %*% t(Z_i) %*% Rinv %*% (y_i - X_i %*% beta)
         sigma_sum <- sigma_sum + as.numeric(
-          t(y[,i] - X[,,i] %*% beta) %*% W_i %*% (y[,i] - X[,,i] %*% beta)
+          t(y_i - X_i %*% beta) %*% W_i %*% (y_i - X_i %*% beta)
         )
         D_sum <- D_sum + (1 / sigma) * (b_i %*% t(b_i) + U_i)
       }
