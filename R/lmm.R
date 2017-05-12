@@ -35,6 +35,7 @@
 
 #Reference paper: Schafer, J.L.S., 1998, some improved procedures for linear mixed models
 #Ui, Wi and beta is calculated in parallel form. Then,sigma and D are calculated with final beta
+#Function is updated for stacked vector and matrices.
 lmm.ep.em <- function(
   y, X, Z,
   beta, R, D, sigma,
