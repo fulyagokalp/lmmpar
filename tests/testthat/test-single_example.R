@@ -4,47 +4,66 @@ context("single_example")
 test_that("single example", {
 
 
-  n <- ifelse(interactive(), 10000, 1000)
+  n <- 10000
   m <- 4
   N <- n*m
-  p <- 30
+  p <- 4
   q <- 2
-  c <- 2  #contamination factor
-  pb <- 0
-  pe <- 0
+  # c <- 2  #contamination factor
+  # pb <- 0
+  # pe <- 0
   nu <- 3 #degrees of freedom of t-distribution
 
   #Initial parameters
-  #beta = matrix(c(1,2,1),p+1,1)  #It should have p+1 values
-  # beta = matrix(c(10,0,1),p+1,1)
   beta = matrix(rmnorm(p+1, 10, 1),p+1,1)
   R = diag(m)
   D = matrix(c(16, 0, 0, 0.025), nrow=q)
   sigma=1
 
   #Empty arrays for x and z; matrices for b, e, and y
-  X <- array(NA,c(m,p+1,n))
-  Z <- array(NA,c(m,q,n))
-  b <- matrix(NA, q, n)
-  e <- matrix(NA, m, n)
-  y <- matrix(NA, m, n)
+#
+#   X <- matrix(NA, (m*n), p+1)
+#   Z <- matrix(NA, (m*n), q)
+#   b <- matrix(NA, n, q)
+#   e <- matrix(NA, n, m)
+#   y <- matrix(NA, m*n, 1)
+  subject <- rep(c(1:n),each=m)
+  repeats <- rep(1:m, n)
 
 
-  for (i in 1:n) {
-    X[,,i] <- cbind(1,matrix(rnorm(m*p),nrow=m))
-    Z[,,i] <- X[,1:q,i,drop=FALSE]
-    b[,i] <- rmnorm(1, rep(0, q), D)
-    e[,i] <- rmnorm(1, rep(0, m), sigma*R)
-    y[,i] <- X[,,i]%*%beta+Z[,,i]%*% b[,i]+e[,i]
-  }
+  # X <- array(NA,c(m,p+1,n))
+  # Z <- array(NA,c(m,q,n))
+  # b <- matrix(NA, q, n)
+  # e <- matrix(NA, m, n)
+  # y <- matrix(NA, m, n)
 
+  # myresultX <- list()
+  # myresultb <- list()
+  # myresulte <- list()
+
+myresultX <- lapply(1:n, function(i) cbind(1,matrix(rnorm(m*p),nrow=m)))
+X <- do.call(rbind, myresultX)
+Z <- X[,1:q]
+myresultb <- lapply(1:n, function(i) rmnorm(1, rep(0, q), D))
+myresulte <- lapply(1:n, function(i) rmnorm(1, rep(0, m), sigma*R))
+
+myresulty <- lapply(1:n, function(i) myresultX[[i]]%*%beta+myresultX[[i]][,1:q]%*%myresultb[[i]]+myresulte[[i]])
+y <- do.call(rbind, myresulty)
+
+# for (i in 1:n) {
+#   X[,,i] <- cbind(1,matrix(rnorm(m*p),nrow=m))
+#   Z[,,i] <- X[,1:q,i,drop=FALSE]
+#   b[,i] <- rmnorm(1, rep(0, q), D)
+#   e[,i] <- rmnorm(1, rep(0, m), sigma*R)
+#   y[,i] <- X[,,i]%*%beta+Z[,,i]%*% b[,i]+e[,i]
+# }
 
   #Z <- matrix(c(1,1,1,1,8,10,12,14),m,p)
   #X <- matrix(c(1,1,1,1,8,10,12,14),m,p)
-
-  X2 <- rep(c(8,10,12,14) ,n)
-  Z2 <- rep(c(8,10,12,14) ,n)
-  subject <- rep(c(1:n),each=m)
+#
+#   X2 <- rep(c(8,10,12,14) ,n)
+#   Z2 <- rep(c(8,10,12,14) ,n)
+#   subject <- rep(c(1:n),each=m)
 
   #VarBi <- (1+(c^2-1)*pb)*D
   #VarEi <- (1+(c^2-1)*pe)*sigma*R
@@ -65,7 +84,7 @@ test_that("single example", {
   # }
 
 
-  cores_vals <- c(1, 2, 4, 8)
+  cores_vals <- c(1, 2)
 
   timings <- list()
   for (i in seq_along(cores_vals)) {
@@ -86,9 +105,12 @@ test_that("single example", {
 
     timing <- as.list(timing)
     timing$cores <- cores_vals[i]
+    timing$n <- n
+    timing$repeats <- m
+    timing$p <- p
     timings[[i]] <- timing
 
-    expect_true(TRUE)
+    #expect_true(TRUE)
   }
 
   cat("\n")
@@ -100,15 +122,15 @@ test_that("single example", {
   # print(pryr::object_size(R))
   # print(pryr::object_size(D))
 
-
-  Y <- as.vector(y)
-  m1 <- lme4::lmer(Y~X2+(1|subject)+(Z2-1|subject),REML=FALSE)
-  AICGauss <- 2*61-2*logLik(m1,REML=FALSE)
-  summary(m1)$coefficients[,1][1]
-  summary(m1)$coefficients[,1][2]
-  unlist(summary(m1))$varcor.subject
-  unlist(summary(m1))$varcor.subject.1
-  sigma(m1)
+#
+#   Y <- as.vector(y)
+#   m1 <- lme4::lmer(Y~X2+(1|subject)+(Z2-1|subject),REML=FALSE)
+#   AICGauss <- 2*61-2*logLik(m1,REML=FALSE)
+#   summary(m1)$coefficients[,1][1]
+#   summary(m1)$coefficients[,1][2]
+#   unlist(summary(m1))$varcor.subject
+#   unlist(summary(m1))$varcor.subject.1
+#   sigma(m1)
 
 
   # expect_true(abs(AICGauss - ans$AIC) < 10)
