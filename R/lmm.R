@@ -37,7 +37,7 @@
 #Ui, Wi and beta is calculated in parallel form. Then,sigma and D are calculated with final beta
 #Function is updated for stacked vector and matrices.
 lmm.ep.em <- function(
-  y, X, Z,
+  y, X, Z, subject,
   beta, R, D, sigma,
   nrm = 100, maxiter = 500,
   cores = 8
@@ -45,8 +45,8 @@ lmm.ep.em <- function(
 
   a <- 0
   p = nrow(beta)
-  n = ncol(y)
-  m = nrow(y)
+  n = length(unique(subject))
+  m = nrow(y) / n
   N <- n*m
   q = dim(D)[1]
 
@@ -69,6 +69,7 @@ lmm.ep.em <- function(
 
   repeat {
     if (a>maxiter||nrm<0.0005) {break}
+    # cat("iter: ", a, "\n")
 
     #It is the parallel version of ith_ans = lapply(1:n, function(i) {} )
     ith_thread_fn <- function(core_i) {
@@ -80,9 +81,11 @@ lmm.ep.em <- function(
       D_sum <- array(0, c(q,q))
 
       for (i in positions) {
-        X_i = subset(X, subject == i)
-        Z_i = subset(Z, subject == i)
-        y_i = subset(y, subject == i)
+        # cat("pos: ", i, "\n")
+        subject_rows <- subject == i
+        X_i = subset(X, subject_rows)
+        Z_i = subset(Z, subject_rows)
+        y_i = subset(y, subject_rows)
 
         U_i <- MASS::ginv(
           Dinv + (t(Z_i) %*% Rinv %*% Z_i)

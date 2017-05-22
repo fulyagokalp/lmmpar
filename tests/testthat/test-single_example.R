@@ -18,7 +18,7 @@ test_that("single example", {
   beta = matrix(rmnorm(p+1, 10, 1),p+1,1)
   R = diag(m)
   D = matrix(c(16, 0, 0, 0.025), nrow=q)
-  sigma=1
+  sigma = 1
 
   #Empty arrays for x and z; matrices for b, e, and y
 #
@@ -27,7 +27,7 @@ test_that("single example", {
 #   b <- matrix(NA, n, q)
 #   e <- matrix(NA, n, m)
 #   y <- matrix(NA, m*n, 1)
-  subject <- rep(c(1:n),each=m)
+  subject <- rep(1:n, each = m)
   repeats <- rep(1:m, n)
 
 
@@ -47,7 +47,14 @@ Z <- X[,1:q]
 myresultb <- lapply(1:n, function(i) rmnorm(1, rep(0, q), D))
 myresulte <- lapply(1:n, function(i) rmnorm(1, rep(0, m), sigma*R))
 
-myresulty <- lapply(1:n, function(i) myresultX[[i]]%*%beta+myresultX[[i]][,1:q]%*%myresultb[[i]]+myresulte[[i]])
+myresulty <- lapply(
+  1:n,
+  function(i) {
+    (myresultX[[i]] %*% beta) +
+    (myresultX[[i]][,1:q] %*% myresultb[[i]]) +
+    myresulte[[i]]
+  }
+)
 y <- do.call(rbind, myresulty)
 
 # for (i in 1:n) {
@@ -94,6 +101,7 @@ y <- do.call(rbind, myresulty)
         y,
         X,
         Z,
+        subject,
         beta = beta,
         R = R,
         D = D,

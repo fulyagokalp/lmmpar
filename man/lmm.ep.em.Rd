@@ -4,11 +4,11 @@
 \alias{lmm.ep.em}
 \title{Title}
 \usage{
-lmm.ep.em(y, X, Z, beta, R, D, sigma, nu = 3, nrm = 100, maxiter = 500,
-  first_parallel = FALSE, second_parallel = FALSE, cores = 8)
+lmm.ep.em(y, X, Z, subject, beta, R, D, sigma, nrm = 100, maxiter = 500,
+  cores = 8)
 }
 \arguments{
-\item{y}{desc1}
+\item{y}{matrix of responses with observations/subjects on column and repeats for each observation/subject on rows. It is (m $\times$ n) dimensional.}
 
 \item{X}{desc1}
 
