@@ -73,12 +73,12 @@ lmm.ep.em <- function(
   # y <- cbind(y, subject = subject)
   # X <- cbind(X, subject = subject)
   # Z <- cbind(Z, subject = subject)
-  #
-  # y_mem <- bigmemory::as.big.matrix(y)
-  # X_mem <- bigmemory::as.big.matrix(X)
-  # Z_mem <- bigmemory::as.big.matrix(Z)
-  #
-  # subject_list <- split(seq_along(subject), subject)
+
+  y_mem <- bigmemory::as.big.matrix(y)
+  X_mem <- bigmemory::as.big.matrix(X)
+  Z_mem <- bigmemory::as.big.matrix(Z)
+
+  subject_list <- split(seq_along(subject), subject)
 
   repeat {
     if (a>maxiter||nrm<0.0005) {break}
@@ -94,11 +94,10 @@ lmm.ep.em <- function(
       D_sum <- array(0, c(q,q))
 
       for (i in positions) {
-        # cat("pos: ", i, "\n")
-        subject_rows <- subject == i
-        X_i = subset(X, subject_rows)
-        Z_i = subset(Z, subject_rows)
-        y_i = subset(y, subject_rows)
+        subject_rows <- subject_list[[i]]
+        y_i = y_mem[subject_rows, , drop = FALSE]
+        X_i = X_mem[subject_rows, , drop = FALSE]
+        Z_i = Z_mem[subject_rows, , drop = FALSE]
 
         U_i <- MASS::ginv(
           Dinv + (t(Z_i) %*% Rinv %*% Z_i)

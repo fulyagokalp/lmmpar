@@ -90,6 +90,8 @@ y <- do.call(rbind, myresulty)
   # y[,i] <- X%*%beta+Z%*%b+e
   # }
 
+  cat("\nstarting timings...\n\n")
+
 
   cores_vals <- c(4, 1)
 
