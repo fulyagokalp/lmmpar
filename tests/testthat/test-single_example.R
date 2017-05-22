@@ -7,7 +7,7 @@ test_that("single example", {
   n <- 10000
   m <- 4
   N <- n*m
-  p <- 4
+  p <- 50
   q <- 2
   # c <- 2  #contamination factor
   # pb <- 0
@@ -15,7 +15,7 @@ test_that("single example", {
   nu <- 3 #degrees of freedom of t-distribution
 
   #Initial parameters
-  beta = matrix(rmnorm(p+1, 10, 1),p+1,1)
+  beta = matrix(mnormt::rmnorm(p+1, 10, 1),p+1,1)
   R = diag(m)
   D = matrix(c(16, 0, 0, 0.025), nrow=q)
   sigma = 1
@@ -44,8 +44,8 @@ test_that("single example", {
 myresultX <- lapply(1:n, function(i) cbind(1,matrix(rnorm(m*p),nrow=m)))
 X <- do.call(rbind, myresultX)
 Z <- X[,1:q]
-myresultb <- lapply(1:n, function(i) rmnorm(1, rep(0, q), D))
-myresulte <- lapply(1:n, function(i) rmnorm(1, rep(0, m), sigma*R))
+myresultb <- lapply(1:n, function(i) mnormt::rmnorm(1, rep(0, q), D))
+myresulte <- lapply(1:n, function(i) mnormt::rmnorm(1, rep(0, m), sigma*R))
 
 myresulty <- lapply(
   1:n,
@@ -93,7 +93,7 @@ y <- do.call(rbind, myresulty)
   cat("\nstarting timings...\n\n")
 
 
-  cores_vals <- c(4, 1)
+  cores_vals <- rev(c(1, 4))
 
   timings <- list()
   for (i in seq_along(cores_vals)) {
