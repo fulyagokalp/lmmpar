@@ -12,13 +12,16 @@ License: MIT + file LICENSE
 LazyData: TRUE
 Depends: R (>= 3.2.2)
 Imports: MASS,
+    matrixcalc,
     mnormt,
     lme4,
     nlme,
     mvtnorm,
     plyr,
     psych,
-    parallel
+    doParallel,
+    bigmemory,
+    bigtabulate
 Suggests: testthat,
     knitr
 RoxygenNote: 6.0.1
