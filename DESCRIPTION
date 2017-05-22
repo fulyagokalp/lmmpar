@@ -19,7 +19,9 @@ Imports: MASS,
     mvtnorm,
     plyr,
     psych,
-    parallel
+    doParallel,
+    bigmemory,
+    bigtabulate
 Suggests: testthat,
     knitr
 RoxygenNote: 6.0.1

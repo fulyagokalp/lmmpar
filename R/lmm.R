@@ -55,21 +55,34 @@ lmm.ep.em <- function(
 
   cores <- floor(cores)
   if (cores > 1) {
+    doParallel::registerDoParallel(cores)
     #c2 <- parallel::makeCluster(cores)
-    c2 <- parallel::makeCluster(cores, type="FORK")
-    on.exit({
-      parallel::stopCluster(c2)
-    })
-    env <- base::environment()
-    parallel::clusterExport(c2, ls(envir = env), envir = env)
+    # c2 <- parallel::makeCluster(cores, type="FORK")
+    # on.exit({
+    #   parallel::stopCluster(c2)
+    # })
+    # env <- base::environment()
+    # parallel::clusterExport(c2, ls(envir = env), envir = env)
   } else {
     c2 <- NULL
   }
 
+  # colnames(y) <- "Y"
+  # colnames(X) <- paste("X", 1:ncol(X), sep = "")
+  # colnames(Z) <- paste("Z", 1:ncol(Z), sep = "")
+  # y <- cbind(y, subject = subject)
+  # X <- cbind(X, subject = subject)
+  # Z <- cbind(Z, subject = subject)
+  #
+  # y_mem <- bigmemory::as.big.matrix(y)
+  # X_mem <- bigmemory::as.big.matrix(X)
+  # Z_mem <- bigmemory::as.big.matrix(Z)
+  #
+  # subject_list <- split(seq_along(subject), subject)
 
   repeat {
     if (a>maxiter||nrm<0.0005) {break}
-    # cat("iter: ", a, "\n")
+    cat("iter: ", a, "\n")
 
     #It is the parallel version of ith_ans = lapply(1:n, function(i) {} )
     ith_thread_fn <- function(core_i) {
@@ -114,7 +127,8 @@ lmm.ep.em <- function(
     if (cores == 1) {
       answers <- lapply(1, ith_thread_fn)
     } else {
-      answers <- parallel::clusterApply(c2, 1:cores, ith_thread_fn)
+      answers <- plyr::llply(1:cores, ith_thread_fn, .parallel = TRUE)
+      # answers <- parallel::clusterApply(c2, 1:cores, ith_thread_fn)
     }
 
     ubfi_total <- array(0,c(p,p)) + Reduce('+', lapply(answers, `[[`, "ubfi_sum"))
@@ -149,7 +163,7 @@ lmm.ep.em <- function(
     beta = final.beta
 
     final.D=round(final.D,10)
-    final.D[!is.positive.definite(final.D)] = D    #If the matrix is not positive definite, use the initial
+    final.D[!matrixcalc::is.positive.definite(final.D)] = D    #If the matrix is not positive definite, use the initial
     D = final.D
 
     # if (median(svd(final.D)$d)<10) {

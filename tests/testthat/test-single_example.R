@@ -91,7 +91,7 @@ y <- do.call(rbind, myresulty)
   # }
 
 
-  cores_vals <- c(1, 2)
+  cores_vals <- c(4, 1)
 
   timings <- list()
   for (i in seq_along(cores_vals)) {
