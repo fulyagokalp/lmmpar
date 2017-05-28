@@ -18,16 +18,21 @@ test_that("single example", {
   beta = matrix(rmnorm(p+1, 10, 1),p+1,1)
   R = diag(m)
   D = matrix(c(16, 0, 0, 0.025), nrow=q)
-  sigma=1
+  sigma = 1
+
+  beta_start = beta
+  R_start = R
+  D_start = D
+  sigma_start = sigma
 
   #Empty arrays for x and z; matrices for b, e, and y
-#
-#   X <- matrix(NA, (m*n), p+1)
-#   Z <- matrix(NA, (m*n), q)
-#   b <- matrix(NA, n, q)
-#   e <- matrix(NA, n, m)
-#   y <- matrix(NA, m*n, 1)
-  subject <- rep(c(1:n),each=m)
+  #
+  #   X <- matrix(NA, (m*n), p+1)
+  #   Z <- matrix(NA, (m*n), q)
+  #   b <- matrix(NA, n, q)
+  #   e <- matrix(NA, n, m)
+  #   y <- matrix(NA, m*n, 1)
+  subject <- rep(1:n, each = m)
   repeats <- rep(1:m, n)
 
 
@@ -41,29 +46,36 @@ test_that("single example", {
   # myresultb <- list()
   # myresulte <- list()
 
-myresultX <- lapply(1:n, function(i) cbind(1,matrix(rnorm(m*p),nrow=m)))
-X <- do.call(rbind, myresultX)
-Z <- X[,1:q]
-myresultb <- lapply(1:n, function(i) rmnorm(1, rep(0, q), D))
-myresulte <- lapply(1:n, function(i) rmnorm(1, rep(0, m), sigma*R))
+  myresultX <- lapply(1:n, function(i) cbind(1,matrix(rnorm(m*p),nrow=m)))
+  X <- do.call(rbind, myresultX)
+  Z <- X[,1:q]
+  myresultb <- lapply(1:n, function(i) rmnorm(1, rep(0, q), D))
+  myresulte <- lapply(1:n, function(i) rmnorm(1, rep(0, m), sigma*R))
 
-myresulty <- lapply(1:n, function(i) myresultX[[i]]%*%beta+myresultX[[i]][,1:q]%*%myresultb[[i]]+myresulte[[i]])
-y <- do.call(rbind, myresulty)
+  myresulty <- lapply(
+    1:n,
+    function(i) {
+      (myresultX[[i]] %*% beta) +
+        (myresultX[[i]][,1:q] %*% myresultb[[i]]) +
+        myresulte[[i]]
+    }
+  )
+  y <- do.call(rbind, myresulty)
 
-# for (i in 1:n) {
-#   X[,,i] <- cbind(1,matrix(rnorm(m*p),nrow=m))
-#   Z[,,i] <- X[,1:q,i,drop=FALSE]
-#   b[,i] <- rmnorm(1, rep(0, q), D)
-#   e[,i] <- rmnorm(1, rep(0, m), sigma*R)
-#   y[,i] <- X[,,i]%*%beta+Z[,,i]%*% b[,i]+e[,i]
-# }
+  # for (i in 1:n) {
+  #   X[,,i] <- cbind(1,matrix(rnorm(m*p),nrow=m))
+  #   Z[,,i] <- X[,1:q,i,drop=FALSE]
+  #   b[,i] <- rmnorm(1, rep(0, q), D)
+  #   e[,i] <- rmnorm(1, rep(0, m), sigma*R)
+  #   y[,i] <- X[,,i]%*%beta+Z[,,i]%*% b[,i]+e[,i]
+  # }
 
   #Z <- matrix(c(1,1,1,1,8,10,12,14),m,p)
   #X <- matrix(c(1,1,1,1,8,10,12,14),m,p)
-#
-#   X2 <- rep(c(8,10,12,14) ,n)
-#   Z2 <- rep(c(8,10,12,14) ,n)
-#   subject <- rep(c(1:n),each=m)
+  #
+  #   X2 <- rep(c(8,10,12,14) ,n)
+  #   Z2 <- rep(c(8,10,12,14) ,n)
+  #   subject <- rep(c(1:n),each=m)
 
   #VarBi <- (1+(c^2-1)*pb)*D
   #VarEi <- (1+(c^2-1)*pe)*sigma*R
@@ -83,10 +95,13 @@ y <- do.call(rbind, myresulty)
   # y[,i] <- X%*%beta+Z%*%b+e
   # }
 
+  cat("\nstarting timings...\n\n")
 
-  cores_vals <- c(1, 2)
+
+  cores_vals <- c(4, 1)
 
   timings <- list()
+  pars <- list()
   for (i in seq_along(cores_vals)) {
     timing <- system.time({
       # profvis::profvis({
@@ -94,6 +109,7 @@ y <- do.call(rbind, myresulty)
         y,
         X,
         Z,
+        subject,
         beta = beta,
         R = R,
         D = D,
@@ -109,28 +125,25 @@ y <- do.call(rbind, myresulty)
     timing$repeats <- m
     timing$p <- p
     timings[[i]] <- timing
-
+    pars$Beta_start = beta_start
+    pars$R_start = R_start
+    pars$D_start = D_start
+    pars$sigma_start = sigma_start
     #expect_true(TRUE)
   }
 
   cat("\n")
   print(as.data.frame(do.call(rbind, timings)))
+  print(pars)
 
-  # print(pryr::object_size(y))
-  # print(pryr::object_size(X))
-  # print(pryr::object_size(Z))
-  # print(pryr::object_size(R))
-  # print(pryr::object_size(D))
-
-#
-#   Y <- as.vector(y)
-#   m1 <- lme4::lmer(Y~X2+(1|subject)+(Z2-1|subject),REML=FALSE)
-#   AICGauss <- 2*61-2*logLik(m1,REML=FALSE)
-#   summary(m1)$coefficients[,1][1]
-#   summary(m1)$coefficients[,1][2]
-#   unlist(summary(m1))$varcor.subject
-#   unlist(summary(m1))$varcor.subject.1
-#   sigma(m1)
+  #   Y <- as.vector(y)
+  #   m1 <- lme4::lmer(Y~X2+(1|subject)+(Z2-1|subject),REML=FALSE)
+  #   AICGauss <- 2*61-2*logLik(m1,REML=FALSE)
+  #   summary(m1)$coefficients[,1][1]
+  #   summary(m1)$coefficients[,1][2]
+  #   unlist(summary(m1))$varcor.subject
+  #   unlist(summary(m1))$varcor.subject.1
+  #   sigma(m1)
 
 
   # expect_true(abs(AICGauss - ans$AIC) < 10)
@@ -138,3 +151,6 @@ y <- do.call(rbind, myresulty)
   # expect_equal(length(ans), 7)
 
 })
+
+
+m1 <- lme4::lmer(Y~X[,2]+X[,3]+X[,4]+X[,5]+X[,6]+X[,7]+X[,8]+X[,9]+X[,10]+X[,11]+X[,12]+X[,13]+X[,14]+X[,15]+X[,16]+X[,17]+X[,18]+X[,19]+X[,20]+X[,21]+X[,22]+X[,23]+X[,24]+X[,25]+X[,26]+X[,27]+X[,28]+X[,29]+X[,30]+X[,31]+X[,32]+X[,33]+X[,34]+X[,35]+X[,36]+X[,37]+X[,38]+X[,39]+X[,40]+X[,41]+X[,42]+X[,43]+X[,44]+X[,45]+X[,46]+X[,47]+X[,48]+X[,49]+X[,50]+X[,51]+(1|subject)+(Z[,2]-1|subject),REML=FALSE)
