@@ -16,6 +16,7 @@ test_that("single example", {
 
   #Initial parameters
   beta = rbind(1,matrix(rmnorm(p, 10, 1),p,1))
+  #beta = rbind(1,matrix(rbinom(p, 1, 0.1),p,1))
   R = diag(m)
   D = matrix(c(16, 0, 0, 0.025), nrow=q)
   sigma = 1
