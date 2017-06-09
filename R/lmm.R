@@ -56,23 +56,7 @@ lmm.ep.em <- function(
   cores <- floor(cores)
   if (cores > 1) {
     doParallel::registerDoParallel(cores)
-    #c2 <- parallel::makeCluster(cores)
-    # c2 <- parallel::makeCluster(cores, type="FORK")
-    # on.exit({
-    #   parallel::stopCluster(c2)
-    # })
-    # env <- base::environment()
-    # parallel::clusterExport(c2, ls(envir = env), envir = env)
-  } else {
-    c2 <- NULL
   }
-
-  # colnames(y) <- "Y"
-  # colnames(X) <- paste("X", 1:ncol(X), sep = "")
-  # colnames(Z) <- paste("Z", 1:ncol(Z), sep = "")
-  # y <- cbind(y, subject = subject)
-  # X <- cbind(X, subject = subject)
-  # Z <- cbind(Z, subject = subject)
 
   y_mem <- bigmemory::as.big.matrix(y)
   X_mem <- bigmemory::as.big.matrix(X)
