@@ -18,13 +18,13 @@
 #' Title
 #'
 #' description
-#' @param y matrix of responses with observations/subjects on column and repeats for each observation/subject on rows. It is (m $\times$ n) dimensional.
-#' @param X desc1
-#' @param Z desc1
-#' @param beta desc1
-#' @param R desc2
-#' @param D desc3
-#' @param cores desc4
+#' @param y, matrix of responses with observations/subjects on column and repeats for each observation/subject on rows. It is (m x n) dimensional.
+#' @param X, observed design matrices for fixed effects. It is (m*n x p) dimensional.
+#' @param Z, observed design matrices for random effects. It is (m*n x q) dimensional.
+#' @param beta, fixed effect estimation vector with length p.
+#' @param R, variance-covariance matrix of residuals.
+#' @param D, variance-covariance matrix of random effects.
+#' @param cores, the number of cores. Why not to use maximum?!
 #' @importFrom MASS ginv
 #' @importFrom mnormt rmnorm
 #' @importFrom stats median
@@ -162,7 +162,7 @@ lmm.ep.em <- function(
     beta = final.beta
 
     final.D=round(final.D,10)
-    final.D[!matrixcalc::is.positive.definite(final.D)] = D    #If the matrix is not positive definite, use the initial
+    final.D[!matrixcalc::is.positive.definite(final.D)] = D    #If the matrix is not positive definite, use the previous parameter
     D = final.D
 
     # if (median(svd(final.D)$d)<10) {
