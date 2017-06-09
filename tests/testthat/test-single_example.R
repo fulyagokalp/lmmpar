@@ -7,7 +7,7 @@ test_that("single example", {
   n <- 10000
   m <- 4
   N <- n*m
-  p <- 4
+  p <- 50
   q <- 2
   # c <- 2  #contamination factor
   # pb <- 0
