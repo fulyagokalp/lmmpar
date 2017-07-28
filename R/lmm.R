@@ -137,7 +137,7 @@ lmm_ep_em <- function(
     final.D <- round(final.D, 10)
     #If the matrix is not positive definite, use the previous parameter
     final.D[!matrixcalc::is.positive.definite(final.D)] <- D
-    D = final.D
+    D <- final.D
 
     # if (median(svd(final.D)$d)<10) {
     #   D = final.D
@@ -146,7 +146,7 @@ lmm_ep_em <- function(
     # }
 
     final.sigma[final.sigma < 0] <- 1
-    sigma = final.sigma
+    sigma <- final.sigma
 
     # if (final.sigma > 0) {
     #   sigma = final.sigma
