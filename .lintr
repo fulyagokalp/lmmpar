@@ -2,7 +2,3 @@ linters: with_defaults(
     line_length_linter(100),
     NULL
   )
-exclusions: list(
-    "inst/doc/example.R",
-    "inst/doc/LmmPar.R"
-  )

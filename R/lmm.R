@@ -104,7 +104,7 @@ lmm_ep_em <- function(
   repeat {
     if (iter > maxiter || nrm < 0.0005) break
 
-    if (verbose) cat("iter: ", a, "\n")
+    if (verbose) cat("iter: ", iter, "\n")
 
     #It is the parallel version of ith_ans = lapply(1:n, function(i) {} )
     core_fn <- function(core_i) {

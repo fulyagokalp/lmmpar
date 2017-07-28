@@ -3,3 +3,4 @@
 ^vignettes_old
 .lintr
 ^\.travis\.yml$
+^cran-comments\.md$

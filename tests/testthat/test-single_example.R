@@ -14,9 +14,9 @@ test_that("single example", {
     N <- n * m
     p <- 50
     q <- 2
-    
+
     # Initial parameters
-    beta <- rbind(1, matrix(rmnorm(p, 10, 1), p, 1))
+    beta <- rbind(1, matrix(mnormt::rmnorm(p, 10, 1), p, 1))
     R <- diag(m)
     D <- matrix(c(16, 0, 0, 0.025), nrow = q)
     sigma <- 1
@@ -33,8 +33,8 @@ test_that("single example", {
     myresult_x <- lapply(1:n, function(i) cbind(1, matrix(rnorm(m * p), nrow = m)))
     X <- do.call(rbind, myresult_x)
     Z <- X[, 1:q]
-    myresult_b <- lapply(1:n, function(i) rmnorm(1, rep(0, q), D))
-    myresult_e <- lapply(1:n, function(i) rmnorm(1, rep(0, m), sigma * R))
+    myresult_b <- lapply(1:n, function(i) mnormt::rmnorm(1, rep(0, q), D))
+    myresult_e <- lapply(1:n, function(i) mnormt::rmnorm(1, rep(0, m), sigma * R))
 
     # found data
     myresulty <- lapply(
