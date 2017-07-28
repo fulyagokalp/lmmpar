@@ -1,6 +1,6 @@
 ^.*\.Rproj$
 ^\.Rproj\.user$
 ^vignettes_old
-.lintr
+^\.lintr$
 ^\.travis\.yml$
 ^cran-comments\.md$

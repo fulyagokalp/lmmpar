@@ -22,7 +22,7 @@
 #' @examples
 #'
 #' # Set up fake data
-#' n <- 10000  # number of subjects
+#' n <- 5000  # number of subjects
 #' m <- 4      # number of repeats
 #' N <- n * m  # true size of data
 #' p <- 50     # number of betas
