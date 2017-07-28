@@ -1,5 +1,5 @@
-# https://github.com/fulyagokalp/lmmpar
-# devtools::install_github("fulyagokalp/lmmpar")
+# https://github.com/fulyagokalp/lmmpar # nolint
+# devtools::install_github("fulyagokalp/lmmpar") # nolint
 
 
 #' Parallel LMM
@@ -109,15 +109,8 @@ lmm_ep_em <- function(
     sigma_total <- 0 + Reduce("+", lapply(answers, `[[`, "sigma_sum"))
     D_total <- array(0, c(q, q)) + Reduce("+", lapply(answers, `[[`, "D_sum"))
 
-    # str(list(
-    #   ubfi_total = ubfi_total,
-    #   ubsi_total = ubsi_total,
-    #   sigma_total = sigma_total,
-    #   D_total = D_total
-    # ))
-
-    final.beta <- ginv(ubfi_total) %*% ubsi_total
     #Final calculations
+    final.beta <- ginv(ubfi_total) %*% ubsi_total
 
     final.D <- (1 / n) * as.matrix(D_total)
     final.sigma <- as.numeric(
@@ -126,12 +119,6 @@ lmm_ep_em <- function(
 
     nrm <- norm(final.beta - beta)
 
-    # str(list(
-    #   final.beta = final.beta,
-    #   final.D = final.D,
-    #   final.sigma = final.sigma
-    # ))
-
     beta <- final.beta
 
     final.D <- round(final.D, 10)
@@ -139,20 +126,19 @@ lmm_ep_em <- function(
     final.D[!matrixcalc::is.positive.definite(final.D)] <- D
     D <- final.D
 
+    ## nolint start
     # if (median(svd(final.D)$d)<10) {
     #   D = final.D
     # } else {
     #   D = D
     # }
+    ## nolint end
 
-    final.sigma[final.sigma < 0] <- 1
+    if (any(final.sigma < 0)) {
+      final.sigma[final.sigma < 0] <- sigma[final.sigma < 0]
+    }
     sigma <- final.sigma
 
-    # if (final.sigma > 0) {
-    #   sigma = final.sigma
-    # } else {
-    #   sigma = sigma
-    # }
     Dinv <- ginv(D)
 
     a <- a + 1
