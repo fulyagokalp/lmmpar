@@ -78,7 +78,7 @@ lmm_ep_em <- function(
   verbose = TRUE
 ){
 
-  a <- 0
+  iter <- 0
   p <- nrow(beta)
   n <- length(unique(subject))
   m <- nrow(y) / n
@@ -102,7 +102,7 @@ lmm_ep_em <- function(
   verbose <- isTRUE(verbose)
 
   repeat {
-    if (a > maxiter || nrm < 0.0005) break
+    if (iter > maxiter || nrm < 0.0005) break
 
     if (verbose) cat("iter: ", a, "\n")
 
@@ -188,11 +188,11 @@ lmm_ep_em <- function(
 
     Dinv <- ginv(D)
 
-    a <- a + 1
+    iter <- iter + 1
   }
 
   return(list(
-    iterations = a,
+    iterations = iter,
     beta = beta,
     D = D,
     sigma = sigma,
