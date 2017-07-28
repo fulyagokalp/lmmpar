@@ -5,14 +5,14 @@ Authors@R: c(
     person("Fulya", "Gokalp Yavuz", email = "fulyagokalp@gmail.com", role = c("aut", "cre")),
     person("Barret", "Schloerke", email = "schloerke@gmail.com", role = c("aut"))
   )
-Description: This package has a single function that addresses Embarrassingly Parallel Linear Mixed Model calculations spread across local cores which repeat until convergence.
+Description: Embarrassingly Parallel Linear Mixed Model calculations spread across local cores which repeat until convergence.
 Encoding: UTF-8
 License: MIT + file LICENSE
 LazyData: TRUE
 Depends: R (>= 3.2.2)
 Imports: MASS,
     matrixcalc,
-      mnormt,
+    mnormt,
     plyr,
     doParallel,
     bigmemory
