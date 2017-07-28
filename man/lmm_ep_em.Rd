@@ -4,21 +4,27 @@
 \alias{lmm_ep_em}
 \title{Parallel LMM}
 \usage{
-lmm_ep_em(y, X, Z, subject, beta, R, D, sigma, nrm = 100, maxiter = 500,
-  cores = 8, verbose = TRUE)
+lmm_ep_em(Y, X, Z, subject, beta, R, D, sigma, maxiter = 500, cores = 8,
+  verbose = TRUE)
 }
 \arguments{
-\item{y}{matrix of responses with observations/subjects on column and repeats for each observation/subject on rows. It is (m x n) dimensional.}
+\item{Y}{matrix of responses with observations/subjects on column and repeats for each observation/subject on rows. It is (m x n) dimensional.}
 
 \item{X}{observed design matrices for fixed effects. It is (m*n x p) dimensional.}
 
 \item{Z}{observed design matrices for random effects. It is (m*n x q) dimensional.}
+
+\item{subject}{vector of positions that belong to each subject.}
 
 \item{beta}{fixed effect estimation vector with length p.}
 
 \item{R}{variance-covariance matrix of residuals.}
 
 \item{D}{variance-covariance matrix of random effects.}
+
+\item{sigma}{initial sigma value.}
+
+\item{maxiter}{the maximum number of iterations that should be calculated.}
 
 \item{cores}{the number of cores. Why not to use maximum?!}
 
@@ -73,7 +79,7 @@ ans <- lmm_ep_em(
   beta = beta,
   R = R,
   D = D,
-  cores = 4,
+  cores = 1, # change to 4 on a personal computer
   sigma = sigma,
   verbose = TRUE
 )

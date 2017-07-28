@@ -5,12 +5,15 @@
 #' Parallel LMM
 #'
 #' description
-#' @param y matrix of responses with observations/subjects on column and repeats for each observation/subject on rows. It is (m x n) dimensional.
+#' @param Y matrix of responses with observations/subjects on column and repeats for each observation/subject on rows. It is (m x n) dimensional.
 #' @param X observed design matrices for fixed effects. It is (m*n x p) dimensional.
 #' @param Z observed design matrices for random effects. It is (m*n x q) dimensional.
+#' @param subject vector of positions that belong to each subject.
 #' @param beta fixed effect estimation vector with length p.
 #' @param R variance-covariance matrix of residuals.
 #' @param D variance-covariance matrix of random effects.
+#' @param sigma initial sigma value.
+#' @param maxiter the maximum number of iterations that should be calculated.
 #' @param cores the number of cores. Why not to use maximum?!
 #' @param verbose boolean that defaults to print iteration context
 #' @importFrom MASS ginv
@@ -62,7 +65,7 @@
 #'   beta = beta,
 #'   R = R,
 #'   D = D,
-#'   cores = 4,
+#'   cores = 1, # change to 4 on a personal computer
 #'   sigma = sigma,
 #'   verbose = TRUE
 #' )
@@ -71,9 +74,9 @@
 #Ui, Wi and beta is calculated in parallel form. Then,sigma and D are calculated with final beta
 #Function is updated for stacked vector and matrices.
 lmm_ep_em <- function(
-  y, X, Z, subject,
+  Y, X, Z, subject,
   beta, R, D, sigma,
-  nrm = 100, maxiter = 500,
+  maxiter = 500,
   cores = 8,
   verbose = TRUE
 ){
@@ -81,7 +84,7 @@ lmm_ep_em <- function(
   iter <- 0
   p <- nrow(beta)
   n <- length(unique(subject))
-  m <- nrow(y) / n
+  m <- nrow(Y) / n
   N <- n * m
   q <- dim(D)[1]
 
@@ -93,13 +96,14 @@ lmm_ep_em <- function(
     doParallel::registerDoParallel(cores)
   }
 
-  y_mem <- bigmemory::as.big.matrix(y)
+  Y_mem <- bigmemory::as.big.matrix(Y)
   X_mem <- bigmemory::as.big.matrix(X)
   Z_mem <- bigmemory::as.big.matrix(Z)
 
   subject_list <- split(seq_along(subject), subject)
 
   verbose <- isTRUE(verbose)
+  nrm <- 1
 
   repeat {
     if (iter > maxiter || nrm < 0.0005) break
@@ -117,7 +121,7 @@ lmm_ep_em <- function(
 
       for (i in positions) {
         subject_rows <- subject_list[[i]]
-        y_i <- y_mem[subject_rows, , drop = FALSE] # nolint
+        Y_i <- Y_mem[subject_rows, , drop = FALSE] # nolint
         X_i <- X_mem[subject_rows, , drop = FALSE] # nolint
         Z_i <- Z_mem[subject_rows, , drop = FALSE] # nolint
 
@@ -127,12 +131,12 @@ lmm_ep_em <- function(
         W_i <- Rinv - (Rinv %*% Z_i %*% U_i %*% t(Z_i) %*% Rinv)
 
         ubfi_sum <- ubfi_sum + t(X_i) %*% W_i %*% X_i
-        ubsi_sum <- ubsi_sum + t(X_i) %*% W_i %*% y_i
+        ubsi_sum <- ubsi_sum + t(X_i) %*% W_i %*% Y_i
 
         #Update u (random effect)
-        b_i <- U_i %*% t(Z_i) %*% Rinv %*% (y_i - X_i %*% beta)
+        b_i <- U_i %*% t(Z_i) %*% Rinv %*% (Y_i - X_i %*% beta)
         sigma_sum <- sigma_sum + as.numeric(
-          t(y_i - X_i %*% beta) %*% W_i %*% (y_i - X_i %*% beta)
+          t(Y_i - X_i %*% beta) %*% W_i %*% (Y_i - X_i %*% beta)
         )
         D_sum <- D_sum + (1 / sigma) * (b_i %*% t(b_i) + U_i)
       }
