@@ -2,5 +2,4 @@
 
 export(lmm_ep_em)
 importFrom(MASS,ginv)
-importFrom(mnormt,rmnorm)
 importFrom(stats,median)
