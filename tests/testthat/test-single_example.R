@@ -14,8 +14,7 @@ test_that("single example", {
     N <- n * m
     p <- 50
     q <- 2
-    nu <- 3 #degrees of freedom of t-distribution
-
+    
     # Initial parameters
     beta <- rbind(1, matrix(rmnorm(p, 10, 1), p, 1))
     R <- diag(m)

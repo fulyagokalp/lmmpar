@@ -2,3 +2,4 @@
 ^\.Rproj\.user$
 ^vignettes_old
 .lintr
+^\.travis\.yml$

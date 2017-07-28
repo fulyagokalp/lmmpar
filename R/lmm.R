@@ -14,18 +14,16 @@
 #' @param cores the number of cores. Why not to use maximum?!
 #' @param verbose boolean that defaults to print iteration context
 #' @importFrom MASS ginv
-#' @importFrom mnormt rmnorm
 #' @importFrom stats median
 #' @export
 #' @examples
 #'
 #' # Set up fake data
 #' n <- 10000  # number of subjects
-#' m <- 4
-#' N <- n * m
-#' p <- 50
-#' q <- 2
-#' nu <- 3 #degrees of freedom of t-distribution
+#' m <- 4      # number of repeats
+#' N <- n * m  # true size of data
+#' p <- 50     # number of betas
+#' q <- 2      # width of random effects
 #'
 #' # Initial parameters
 #' # beta has a 1 for the first value.  all other values are ~N(10, 1)
