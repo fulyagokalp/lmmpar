@@ -3,20 +3,20 @@ context("single_example")
 
 test_that("single example", {
 
-  is_personal <- !is.na(file.info(".lintr")$size)
+  is_personal <- !is.na(file.info(file.path("..", "..", ".lintr"))$size)
 
   if (!is_personal) {
     expect_true(TRUE)
   } else {
 
-    n <- 1000
+    n <- 10000  # number of subjects
     m <- 4
     N <- n * m
     p <- 50
     q <- 2
     nu <- 3 #degrees of freedom of t-distribution
 
-    #Initial parameters
+    # Initial parameters
     beta <- rbind(1, matrix(rmnorm(p, 10, 1), p, 1))
     R <- diag(m)
     D <- matrix(c(16, 0, 0, 0.025), nrow = q)
@@ -28,7 +28,7 @@ test_that("single example", {
     sigma_start <- sigma
 
     # set up data
-    subject <- rep(1:n, each <- m)
+    subject <- rep(1:n, each = m)
     repeats <- rep(1:m, n)
 
     myresult_x <- lapply(1:n, function(i) cbind(1, matrix(rnorm(m * p), nrow = m)))
