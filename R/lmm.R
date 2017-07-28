@@ -57,6 +57,7 @@
 #' Y <- do.call(rbind, subj_y)
 #'
 #' # run the algorithm in parallel to recover the known betas
+#' \dontrun{
 #' ans <- lmm_ep_em(
 #'   Y,
 #'   X,
@@ -65,11 +66,12 @@
 #'   beta = beta,
 #'   R = R,
 #'   D = D,
-#'   cores = 1, # change to 4 on a personal computer
+#'   cores = 4, # change to 4 on a personal computer
 #'   sigma = sigma,
 #'   verbose = TRUE
 #' )
 #' str(ans)
+#' }
 # Reference paper: Schafer, J.L.S., 1998, some improved procedures for linear mixed models
 #Ui, Wi and beta is calculated in parallel form. Then,sigma and D are calculated with final beta
 #Function is updated for stacked vector and matrices.

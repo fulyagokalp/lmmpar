@@ -71,6 +71,7 @@ subj_y <- lapply(
 Y <- do.call(rbind, subj_y)
 
 # run the algorithm in parallel to recover the known betas
+\dontrun{
 ans <- lmm_ep_em(
   Y,
   X,
@@ -79,9 +80,10 @@ ans <- lmm_ep_em(
   beta = beta,
   R = R,
   D = D,
-  cores = 1, # change to 4 on a personal computer
+  cores = 4, # change to 4 on a personal computer
   sigma = sigma,
   verbose = TRUE
 )
 str(ans)
+}
 }
