@@ -124,7 +124,6 @@ lmm_ep_em <- function(
       (1 / N) * as.matrix(sigma_total)[1, 1]
     )
 
-    ratio <- final.sigma / sigma
     nrm <- norm(final.beta - beta)
 
     # str(list(
