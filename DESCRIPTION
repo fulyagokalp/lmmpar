@@ -3,10 +3,9 @@ Title: Parallel Linear Mixed Model
 Version: 0.1.0
 Authors@R: c(
     person("Fulya", "Gokalp Yavuz", email = "fulyagokalp@gmail.com", role = c("aut", "cre")),
-    person("Barret", "Schloerke", role = "aut"),
-    person("advisor", role = "ths")
+    person("Barret", "Schloerke", email = "schloerke@gmail.com", role = c("aut"))
   )
-Description: More about what it does (maybe more than one line). More things.
+Description: Embarrassingly Parallel Linear Mixed Model calculations spread across local cores which repeat until convergence.
 Encoding: UTF-8
 License: MIT + file LICENSE
 LazyData: TRUE
@@ -14,15 +13,10 @@ Depends: R (>= 3.2.2)
 Imports: MASS,
     matrixcalc,
     mnormt,
-    lme4,
-    nlme,
-    mvtnorm,
     plyr,
-    psych,
     doParallel,
-    bigmemory,
-    bigtabulate
-Suggests: testthat,
-    knitr
+    bigmemory
+Suggests: testthat
 RoxygenNote: 6.0.1
-
+URL: https://github.com/fulyagokalp/lmmpar
+BugReports: https://github.com/fulyagokalp/lmmpar/issues
