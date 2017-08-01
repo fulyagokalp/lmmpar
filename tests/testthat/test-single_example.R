@@ -54,7 +54,7 @@ test_that("single example", {
     pars <- list()
     for (i in seq_along(cores_vals)) {
       timing <- system.time({
-        ans.gauss <- lmm_ep_em(
+        ans.gauss <- lmmpar(
           y,
           X,
           Z,

@@ -58,7 +58,7 @@
 #'
 #' # run the algorithm in parallel to recover the known betas
 #' \dontrun{
-#' ans <- lmm_ep_em(
+#' ans <- lmmpar(
 #'   Y,
 #'   X,
 #'   Z,
@@ -75,7 +75,7 @@
 # Reference paper: Schafer, J.L.S., 1998, some improved procedures for linear mixed models
 #Ui, Wi and beta is calculated in parallel form. Then,sigma and D are calculated with final beta
 #Function is updated for stacked vector and matrices.
-lmm_ep_em <- function(
+lmmpar <- function(
   Y, X, Z, subject,
   beta, R, D, sigma,
   maxiter = 500,

@@ -56,7 +56,7 @@ subj_y <- lapply(
 Y <- do.call(rbind, subj_y)
 
 # run the algorithm in parallel to recover the known betas
-ans <- lmm_ep_em(
+ans <- lmmpar(
    Y,
    X,
    Z,
