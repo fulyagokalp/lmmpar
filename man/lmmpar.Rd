@@ -2,7 +2,7 @@
 % Please edit documentation in R/lmm.R
 \name{lmmpar}
 \alias{lmmpar}
-\title{Parallel LMM}
+\title{Parallel Linear Mixed Model}
 \usage{
 lmmpar(Y, X, Z, subject, beta, R, D, sigma, maxiter = 500, cores = 8,
   verbose = TRUE)
@@ -31,7 +31,7 @@ lmmpar(Y, X, Z, subject, beta, R, D, sigma, maxiter = 500, cores = 8,
 \item{verbose}{boolean that defaults to print iteration context}
 }
 \description{
-description
+Embarrassingly Parallel Linear Mixed Model calculations spread across local cores which repeat until convergence.  All calculations are currently done locally, but theoretically, the calculations could be extended to multiple machines.
 }
 \examples{
 

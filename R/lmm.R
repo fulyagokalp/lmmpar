@@ -2,9 +2,10 @@
 # devtools::install_github("fulyagokalp/lmmpar") # nolint
 
 
-#' Parallel LMM
+#' Parallel Linear Mixed Model
 #'
-#' description
+#' Embarrassingly Parallel Linear Mixed Model calculations spread across local cores which repeat until convergence.  All calculations are currently done locally, but theoretically, the calculations could be extended to multiple machines.
+#'
 #' @param Y matrix of responses with observations/subjects on column and repeats for each observation/subject on rows. It is (m x n) dimensional.
 #' @param X observed design matrices for fixed effects. It is (m*n x p) dimensional.
 #' @param Z observed design matrices for random effects. It is (m*n x q) dimensional.
