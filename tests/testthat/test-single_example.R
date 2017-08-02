@@ -5,11 +5,12 @@ test_that("single example", {
 
   set.seed(4321)
   is_personal <- !is.na(file.info(file.path("..", "..", ".lintr"))$size)
-  cores_vals <- c(1, 2)
+  cores_vals <- 1
+  n <- 5000 # number of subjects
   if (is_personal) {
-    cores_vals <- c(cores_vals, 4)
+    cores_vals <- c(cores_vals, 2, 4)
+    n <- 10000
   }
-  n <- ifelse(is_personal, 10000, 5000)  # number of subjects
   m <- 4
   N <- n * m
   p <- 20

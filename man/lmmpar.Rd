@@ -70,7 +70,7 @@ subj_y <- lapply(
 )
 Y <- do.call(rbind, subj_y)
 
-# run the algorithm in parallel to recover the known betas
+# run the algorithm to recover the known betas
 ans <- lmmpar(
   Y,
   X,
@@ -79,7 +79,7 @@ ans <- lmmpar(
   beta = beta,
   R = R,
   D = D,
-  cores = 2,
+  cores = 1, # increase for faster computation
   sigma = sigma,
   verbose = TRUE
 )

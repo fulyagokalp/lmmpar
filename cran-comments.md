@@ -2,9 +2,7 @@
 
 ## 2017-8-2
 
-Changed the numbers around to execute the example and in testing! Thank you for the suggestion.
-
-(Initial errors were caused when using 4 cores.  It does work with 2 cores!)
+Changed the numbers around to execute the example and in testing! Thank you for the suggestion. Due to win-builder failures, only one core could be used.  The function is still executed though!
 
 - Fulya
 
