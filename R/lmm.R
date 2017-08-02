@@ -23,10 +23,10 @@
 #' @examples
 #'
 #' # Set up fake data
-#' n <- 5000  # number of subjects
+#' n <- 1000  # number of subjects
 #' m <- 4      # number of repeats
 #' N <- n * m  # true size of data
-#' p <- 50     # number of betas
+#' p <- 15     # number of betas
 #' q <- 2      # width of random effects
 #'
 #' # Initial parameters
@@ -58,7 +58,6 @@
 #' Y <- do.call(rbind, subj_y)
 #'
 #' # run the algorithm in parallel to recover the known betas
-#' \dontrun{
 #' ans <- lmmpar(
 #'   Y,
 #'   X,
@@ -67,12 +66,11 @@
 #'   beta = beta,
 #'   R = R,
 #'   D = D,
-#'   cores = 4, # change to 4 on a personal computer
+#'   cores = 2,
 #'   sigma = sigma,
 #'   verbose = TRUE
 #' )
 #' str(ans)
-#' }
 # Reference paper: Schafer, J.L.S., 1998, some improved procedures for linear mixed models
 #Ui, Wi and beta is calculated in parallel form. Then,sigma and D are calculated with final beta
 #Function is updated for stacked vector and matrices.

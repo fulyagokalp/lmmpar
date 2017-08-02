@@ -36,10 +36,10 @@ Embarrassingly Parallel Linear Mixed Model calculations spread across local core
 \examples{
 
 # Set up fake data
-n <- 5000  # number of subjects
+n <- 1000  # number of subjects
 m <- 4      # number of repeats
 N <- n * m  # true size of data
-p <- 50     # number of betas
+p <- 15     # number of betas
 q <- 2      # width of random effects
 
 # Initial parameters
@@ -71,7 +71,6 @@ subj_y <- lapply(
 Y <- do.call(rbind, subj_y)
 
 # run the algorithm in parallel to recover the known betas
-\dontrun{
 ans <- lmmpar(
   Y,
   X,
@@ -80,10 +79,9 @@ ans <- lmmpar(
   beta = beta,
   R = R,
   D = D,
-  cores = 4, # change to 4 on a personal computer
+  cores = 2,
   sigma = sigma,
   verbose = TRUE
 )
 str(ans)
-}
 }
